@@ -1,0 +1,116 @@
+=========
+pylibssh2
+=========
+
+:libssh2: Python module
+:Copyright: Keyphrene, Wallix
+:License: LGPL, BSD
+:Homepage: http://www.wallix.org/pylibssh2
+
+pylibssh2 1.0.0
+================
+
+1.0.0 release, X january 2010
+
+What
+----
+
+pylibssh2 is a python binding for libssh2 library, it was forked and rewrote
+from scratch using old org.keyphrene (http://sourceforge.net/projects/orgkeyphrene/)
+bindings.
+
+I wrote this extension at Wallix (http://wallix.com) to provide an easy
+way to manage SSH2 connection through libssh2 library in python.
+
+This is a C extension module to provide a high level python API. libssh2 API is
+fairy well respected and export into a python API.
+
+Packaging and API is documented with epydoc format. 
+
+Requirements
+------------
+
+    - python 2.6+ <http://www.python.org>
+      (older version before 2.5 aren't supported and not recommended)
+    - libssh2 1.2.1+ <http://www.libssh2.org>
+      (older version after 0.18 can works too)
+
+Linux Debian/Ubuntu::
+
+    sudo aptitude install python2-6 libssh2-1 libssh2-1-dev
+
+FreeBSD::
+
+    sudo make -C /usr/ports/lang/python install clean
+    sudo make -C /usr/ports/security/libssh2/ install clean
+
+License
+-------
+
+Old parts from Keyphrene.org are licensied against GNU Lesser GPL (LGPL) and all
+new and rewritten parts from Wallix.com are licensied against BSD License.
+
+Portability
+-----------
+
+I code and test this binding on Linux and FreeBSD. It would be works on all
+posix platforms but I haven't tried others.
+
+Bugs & Support
+---------------
+
+Bug tracker is available at
+
+    https://bugs.wallix.org/
+
+Mailing list for support and discussions at
+
+    http://www.wallix.org/mailman/listinfo/pylibssh2
+
+Get the source code
+    
+    git clone http://github.com/wallix/pylibssh2.git
+
+Browse the source code at
+
+    http://github.com/wallix/pylibssh2.git
+
+Download tarballs at
+
+    http://pypi.python.org/packages/source/p/pylibssh2/
+    
+
+Example
+-------
+
+:scp_upload.py:
+    dummy version of scp upload file transfer with pylibssh2.
+
+:sftp_listdir.py:
+    this example show how to use pylibssh2 to list remote directories through
+    SFTP protocol.
+
+:ssh_exec.py:
+    this example show how to execute a SSH remote command execution.
+
+:ssh.py:
+    this example demonstrate how implement a partial ssh client to get a remote
+    shell.
+
+:ssh_x11.py:
+    this example show how to implement a X11 fowarding ssh client.
+
+Documentation
+-------------
+
+API documentation can be generated with epydoc <http://epydoc.sourceforge.net/> 
+with following command line::
+
+    epydoc --no-private -n pylibssh2 -o doc libssh2
+
+Install
+-------
+
+See the INSTALL file for installation instructions.
+
+Don't hesitate to reports bugs and submit patches, or just mail author.

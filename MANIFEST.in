@@ -1,0 +1,3 @@
+include AUTHORS ChangeLogCOPYING INSTALL README
+recursive-include src *.c *.h
+recursive-include examples *

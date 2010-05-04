@@ -1,0 +1,14 @@
+Source: pylibssh2
+Section: libs
+Priority: extra
+Maintainer: Sofian Brabez <sbz@wallix.com>
+Build-Depends: cdbs (>= 0.4.49), libssh2-1-dev, python-all-dev, python-support
+Standards-Version: 3.8.1
+
+Package: python-libssh2
+Architecture: any
+Homepage: http://pylibssh2.wallix.org
+Depends: ${shlibs:Depends}, ${misc:Depends}
+Description: Python binding for libssh2 library
+    Python binding for libssh2 library
+    wwww: http://pylibssh2.wallix.org

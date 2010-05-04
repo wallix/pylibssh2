@@ -1,0 +1,5 @@
+pylibssh2 (1.0.0) unstable; urgency=low
+
+  * Initial Release.
+
+ -- Sofian Brabez <sbz@wallix.com>  Tue, 8 Dec 2009 17:10:49 +0100

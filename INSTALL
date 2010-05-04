@@ -1,0 +1,41 @@
+=========
+pylibssh2
+=========
+
+.. Generate an HTML page with "rst2html.py INSTALL > install.html"
+.. rst2html.py is part of the docutils software suite.
+
+.. contents:: **Index**
+.. sectnum::
+
+
+Prerequisites
+=============
+
+Here is the list of prerequisite software to run pylibssh2. The versions are
+the ones I develop with. It may work with earlier versions, but I can't
+guaranty anything.
+
+* `libssh2 <http://www.libssh2.org>`_ 1.2.1+
+* `python <http://python.org/>`_ 2.6+
+
+Install the software
+====================
+
+Get the latest version of `pylibssh2`_.
+
+.. _ `pylibssh2`: http://pypi.python.org/packages/source/p/pylibssh2/
+
+Untar the tarball in the directory of your choice::
+
+    $ tar zxvf pylibssh2-{version}.tar.gz
+
+Now enter in the pylibssh2-{version} directory.
+
+Run the following command::
+
+    # python setup.py install
+
+    or
+
+    $ sudo python setup.py install
