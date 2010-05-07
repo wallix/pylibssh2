@@ -4,13 +4,13 @@ pylibssh2
 
 :libssh2: Python module
 :Copyright: Keyphrene, Wallix
-:License: LGPL, BSD
-:Homepage: http://www.wallix.org/pylibssh2
+:License: LGPL
+:Homepage: http://www.wallix.org/index.php/category/pylibssh2
 
 pylibssh2 1.0.0
 ================
 
-1.0.0 release, X january 2010
+1.0.0 release, X may 2010
 
 What
 ----
@@ -48,7 +48,7 @@ License
 -------
 
 Old parts from Keyphrene.org are licensied against GNU Lesser GPL (LGPL) and all
-new and rewritten parts from Wallix.com are licensied against BSD License.
+new and rewritten parts from Wallix.com are licensied against LGPL License too.
 
 Portability
 -----------
