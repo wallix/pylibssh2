@@ -5,7 +5,7 @@ pylibssh2
 :libssh2: Python module
 :Copyright: Keyphrene, Wallix
 :License: LGPL
-:Homepage: http://www.wallix.org/index.php/category/pylibssh2
+:Homepage: http://github.com/wallix/pylibssh2
 
 pylibssh2 1.0.0
 ================
@@ -61,11 +61,11 @@ Bugs & Support
 
 Bug tracker is available at
 
-    https://bugs.wallix.org/
+    http://github.com/wallix/pylibssh2/issues
 
 Mailing list for support and discussions at
 
-    http://www.wallix.org/mailman/listinfo/pylibssh2
+    http://lists.wallix.org/mailman/listinfo/pylibssh2
 
 Get the source code
     
