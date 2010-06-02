@@ -37,7 +37,7 @@ Requirements
 
 Linux Debian/Ubuntu::
 
-    sudo aptitude install python2-6 libssh2-1 libssh2-1-dev
+    sudo aptitude install python2.6 python2.6-dev libssh2-1 libssh2-1-dev
 
 FreeBSD::
 

@@ -558,12 +558,18 @@ PYLIBSSH2_Channel_poll(PYLIBSSH2_CHANNEL *self, PyObject *args)
 /* {{{ PYLIBSSH2_Channel_x11_req
  */
 static char PYLIBSSH2_Channel_x11_req_doc[] = "\n\
-x11_req([display]) -> int\n\
+x11_req([single_connection, auth_proto, auth_cookie, display]) -> int\n\
 \n\
 Requests an X11 Forwarding on the channel.\n\
 \n\
+@param  single_connection: forward a single connection\n\
+@type  single_connection: int\n\
+@param  auth_proto: X11 authentication protocol to use\n\
+@type  auth_proto: str\n\
+@param  auth_cookie: the cookie\n\
+@type  auth_cookie: str\n\
 @param  display: screen number\n\
-@param  display: int\n\
+@type  display: int\n\
 \n\
 @return 0 on success or negative on failure\n\
 @rtype  int";
@@ -572,14 +578,17 @@ static PyObject *
 PYLIBSSH2_Channel_x11_req(PYLIBSSH2_CHANNEL *self, PyObject *args)
 {
     int rc;
+    int single_connection = 0;
+    char *auth_proto = NULL;
+    char *auth_cookie = NULL;
     int display = 0;
 
-    if (!PyArg_ParseTuple(args, "|i:poll_x11_req", &display)) {
+    if (!PyArg_ParseTuple(args, "|issi:poll_x11_req", &single_connection, &auth_proto, &auth_cookie, &display)) {
         return NULL;
     }
 
     MY_BEGIN_ALLOW_THREADS(self->tstate);
-    rc = libssh2_channel_x11_req(self->channel, display);
+    rc = libssh2_channel_x11_req_ex(self->channel, single_connection, auth_proto, auth_cookie, display);
     MY_END_ALLOW_THREADS(self->tstate);
 
     return Py_BuildValue("i", rc);

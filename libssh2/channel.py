@@ -225,14 +225,20 @@ class Channel(object):
         """
         return self._channel.write(message)
 
-    def x11_req(self, display):
+    def x11_req(self, single_connection, auth_proto, auth_cookie, display):
         """
         Requests a X11 Forwarding on the channel.
 
+        @param single_connection: forward a single connection
+        @type single_connection: int
+        @param auth_proto: X11 authentication protocol to use
+        @type auth_proto: str
+        @param auth_cookie: the cookie
+        @type auth_cookie: str
         @param display: screen number
-        @param display: int
+        @type display: int
 
         @return: 0 on success or negative on failure
         @rtype: int
         """
-        return self._channel.x11_req(display)
+        return self._channel.x11_req(single_connection, auth_proto, auth_cookie, display)

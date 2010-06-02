@@ -51,13 +51,6 @@ class MySSHClient:
 
             self.session.startup(self.sock)
             
-            hash = self.session.hostkey_hash(2)
-
-            #print "----"
-            #import base64
-            #print base64.encodestring(hash)
-            #print "----"
-
             # authentication
             self.session.userauth_password(self.username, self.password)
 
@@ -70,9 +63,6 @@ class MySSHClient:
         try:
             # open channel
             channel = self.session.open_session()
-
-            # request X11 Forwarding on display 0
-            channel.x11_req(0)
 
             # request pty
             channel.pty('vt100')
