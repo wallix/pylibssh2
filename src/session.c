@@ -88,8 +88,7 @@ PYLIBSSH2_Session_startup(PYLIBSSH2_SESSION *self, PyObject *args)
         libssh2_session_last_error(self->session, &last_error, NULL, 0);
         /* CLEAN: PYLIBSSH2_SESSION_STARTUP_MSG */
         PyErr_Format(PYLIBSSH2_Error, "SSH startup: %s", last_error);
-        Py_INCREF(Py_None);
-        return Py_None;
+        return NULL;
     }
     
     self->opened = 1;
@@ -128,8 +127,7 @@ PYLIBSSH2_Session_close(PYLIBSSH2_SESSION *self, PyObject *args)
     if (rc) {
         /* CLEAN: PYLIBSSH2_SESSION_CLOSE_MSG */
         PyErr_SetString(PYLIBSSH2_Error, "SSH close error.");
-        Py_INCREF(Py_None);
-        return Py_None;
+        return NULL;
     }
 
     self->opened = 0;
@@ -308,8 +306,7 @@ PYLIBSSH2_Session_userauth_publickey_fromfile(PYLIBSSH2_SESSION *self, PyObject 
         libssh2_session_last_error(self->session, &last_error, NULL, 0);
         PyErr_Format(PYLIBSSH2_Error, "Authentification by public key failed: %s",
                      last_error);
-        Py_INCREF(Py_None);
-        return Py_None;
+        return NULL;
     }
 
     return Py_BuildValue("i", rc);
@@ -453,8 +450,7 @@ PYLIBSSH2_Session_scp_recv(PYLIBSSH2_SESSION *self, PyObject *args)
     if (channel == NULL) {
         /* CLEAN: PYLIBSSH2_CHANNEL_SCP_RECV_ERROR_MSG */
         PyErr_SetString(PYLIBSSH2_Error, "SCP receive error.");
-        Py_INCREF(Py_None);
-        return Py_None;
+        return NULL;
     }
     
     return (PyObject *)PYLIBSSH2_Channel_New(channel, 1);
@@ -494,8 +490,7 @@ PYLIBSSH2_Session_scp_send(PYLIBSSH2_SESSION *self, PyObject *args)
     if (channel == NULL) {
         /* CLEAN: PYLIBSSH2_CHANNEL_SCP_SEND_ERROR_MSG */
         PyErr_SetString(PYLIBSSH2_Error, "SCP send error.");
-        Py_INCREF(Py_None);
-        return Py_None;
+        return NULL;
     }
 
     return (PyObject *)PYLIBSSH2_Channel_New(channel, 1);
@@ -570,8 +565,7 @@ PYLIBSSH2_Session_direct_tcpip(PYLIBSSH2_SESSION *self, PyObject *args)
         libssh2_session_last_error(self->session, &last_error, NULL, 0);
         /* CLEAN: PYLIBSSH2_SESSION_TCP_CONNECT_ERROR_MSG */
         PyErr_SetString(PYLIBSSH2_Error, "Unable to create TCP connection.");
-        Py_INCREF(Py_None);
-        return Py_None;
+        return NULL;
     }
 
     return (PyObject *)channel;
@@ -619,8 +613,7 @@ PYLIBSSH2_Session_forward_listen(PYLIBSSH2_SESSION *self, PyObject *args)
     if (listener == NULL) {
         /* CLEAN: PYLIBSSH2_SESSION_TCP_CONNECT_ERROR_MSG */
         PyErr_SetString(PYLIBSSH2_Error, "Unable to forward listen connection.");
-        Py_INCREF(Py_None);
-        return Py_None;
+        return NULL;
     }
 
     return (PyObject *)PYLIBSSH2_Listener_New(listener, 0);

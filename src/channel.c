@@ -48,8 +48,7 @@ PYLIBSSH2_Channel_close(PYLIBSSH2_CHANNEL *self, PyObject *args)
     if (rc) {
         /* CLEAN: PYLIBSSH2_CHANNEL_CANT_CLOSE_MSG */
         PyErr_SetString(PYLIBSSH2_Error, "Unable to close the channel.");
-        Py_INCREF(Py_None);
-        return Py_None; 
+        return NULL; 
     }
 
     return Py_BuildValue("i", rc);
@@ -102,8 +101,7 @@ PYLIBSSH2_Channel_pty(PYLIBSSH2_CHANNEL *self, PyObject *args)
     if (rc) {
         /* CLEAN: PYLIBSSH2_CHANNEL_PTY_FAILED_MSG */ 
         PyErr_SetString(PYLIBSSH2_Error, "Failed to request pty.");
-        Py_INCREF(Py_None);
-        return Py_None;
+        return NULL;
     }
 
     return Py_BuildValue("i", rc);
@@ -156,8 +154,7 @@ PYLIBSSH2_Channel_pty_resize(PYLIBSSH2_CHANNEL *self, PyObject *args)
 
     if (rc) {
         PyErr_SetString(PYLIBSSH2_Error, "Failed to resize pty");
-        Py_INCREF(Py_None);
-        return Py_None;
+        return NULL;
     }
 
     return Py_BuildValue("i",rc);
@@ -186,8 +183,7 @@ PYLIBSSH2_Channel_shell(PYLIBSSH2_CHANNEL *self, PyObject *args)
     if (rc) {
         /* CLEAN: PYLIBSSH2_CHANNEL_CANT_REQUEST_SHELL_MSG */
         PyErr_SetString(PYLIBSSH2_Error,"Unable to request shell on allocated pty.");
-        Py_INCREF(Py_None);
-        return Py_None;
+        return NULL;
     }
 
     return Py_BuildValue("i", rc);
@@ -224,8 +220,7 @@ PYLIBSSH2_Channel_execute(PYLIBSSH2_CHANNEL *self, PyObject *args)
     if (rc) {
         /* CLEAN: PYLIBSSH2_CANT_REQUEST_EXEC_COMMAND_MSG */
         PyErr_SetString(PYLIBSSH2_Error, "Unable to request exec command.");
-        Py_INCREF(Py_None);
-        return Py_None;
+        return NULL;
     }
 
     return Py_BuildValue("i", rc);
@@ -266,8 +261,7 @@ PYLIBSSH2_Channel_setenv(PYLIBSSH2_CHANNEL *self, PyObject *args)
     if (rc == -1) {
         /* CLEAN: PYLIBSSH2_CANT_SET_ENVRIONNEMENT_VARIABLE_MSG */
         PyErr_SetString(PYLIBSSH2_Error,"Unable to set envrionnement variable.");
-        Py_INCREF(Py_None);
-        return Py_None;
+        return NULL;
     }
 
     return Py_BuildValue("i", rc);
@@ -379,8 +373,7 @@ PYLIBSSH2_Channel_write(PYLIBSSH2_CHANNEL *self, PyObject *args)
     if (rc == -1) {
         /* CLEAN: PYLIBSSH2_CANT_WRITE_CHANNEL_MSG */
         PyErr_SetString(PYLIBSSH2_Error,"Unable to write channel.");
-        Py_INCREF(Py_None);
-        return Py_None;
+        return NULL;
     }
 
     return Py_BuildValue("i", rc);
@@ -409,8 +402,7 @@ PYLIBSSH2_Channel_flush(PYLIBSSH2_CHANNEL *self, PyObject *args)
     if (rc == -1) {
         /* CLEAN: PYLIBSSH2_CANT_FLUSH_CHANNEL_MSG */
         PyErr_SetString(PYLIBSSH2_Error, "Unable to flush channel.");
-        Py_INCREF(Py_None);
-        return Py_None;
+        return NULL;
     }
 
     return Py_BuildValue("i", rc);
@@ -473,8 +465,7 @@ PYLIBSSH2_Channel_send_eof(PYLIBSSH2_CHANNEL *self, PyObject *args)
     if (rc == -1) {
         /* CLEAN: PYLIBSSH2_CANT_SEND_EOF_MSG */
         PyErr_SetString(PYLIBSSH2_Error, "Unable to send a EOF on channel.");
-        Py_INCREF(Py_None);
-        return Py_None;
+        return NULL;
     }
 
     return Py_BuildValue("i", rc);

@@ -74,8 +74,7 @@ PYLIBSSH2_Sftp_close(PYLIBSSH2_SFTP *self, PyObject *args)
     if (rc) {
         /* CLEAN: PYLIBSSH2_SFTPHANDLE_CANT_CLOSE_MSG */
         PyErr_SetString(PYLIBSSH2_Error, "Unable to close sftp handle.");
-        Py_INCREF(Py_None);
-        return Py_None;
+        return NULL;
     }
 
     return Py_BuildValue("i", rc);
@@ -108,8 +107,7 @@ PYLIBSSH2_Sftp_opendir(PYLIBSSH2_SFTP *self, PyObject *args)
     if (handle == NULL) {
         /* CLEAN: PYLIBSSH2_SFTPHANDLE_CANT_OPENDIR_MSG */
         PyErr_SetString(PYLIBSSH2_Error, "Unable to open sftp directory.");
-        Py_INCREF(Py_None);
-        return Py_None;
+        return NULL;
     }
 
     return (PyObject *)PYLIBSSH2_Sftphandle_New(handle, 1);
@@ -156,8 +154,7 @@ PYLIBSSH2_Sftp_readdir(PYLIBSSH2_SFTP *self, PyObject *args)
     } else if ( buffer_maxlen == -1) {
         /* CLEAN: PYLIBSSH2_SFTPHANDLE_CANT_READDIR_MSG */
         PyErr_SetString(PYLIBSSH2_Error, "Unable to readdir.");
-        Py_INCREF(Py_None);
-        return Py_None;
+        return NULL;
     }
 
     if (buffer_maxlen != longentry_maxlen && 
@@ -215,8 +212,7 @@ PYLIBSSH2_Sftp_listdir(PYLIBSSH2_SFTP *self, PyObject *args)
             break; 
         } else if (buffer_maxlen == -1) {
             PyErr_SetString(PYLIBSSH2_Error, "Unable to listdir.");
-            Py_INCREF(Py_None);
-            return Py_None;
+            return NULL;
         }
 
         if ( buffer_maxlen != longentry_maxlen && 
@@ -263,8 +259,7 @@ PYLIBSSH2_Sftp_open(PYLIBSSH2_SFTP *self, PyObject *args)
     if (handle == NULL) {
         /* CLEAN: PYLIBSSH2_SFTP_CANT_OPEN_MSG */
         PyErr_SetString(PYLIBSSH2_Error, "Unable to sftp open.");
-        Py_INCREF(Py_None);
-        return Py_None;
+        return NULL;
     }
 
     return (PyObject *)PYLIBSSH2_Sftphandle_New(handle, 1);
@@ -291,8 +286,7 @@ PYLIBSSH2_Sftp_shutdown(PYLIBSSH2_SFTP *self, PyObject *args)
     if (rc == -1) {
         /* CLEAN: PYLIBSSH2_SFTP_CANT_SHUTDOWN_MSG */
         PyErr_SetString(PYLIBSSH2_Error, "Unable to shutdown sftp.");
-        Py_INCREF(Py_None);
-        return Py_None;
+        return NULL;
     }
 
     return Py_BuildValue("i", rc);
@@ -373,8 +367,7 @@ PYLIBSSH2_Sftp_write(PYLIBSSH2_SFTP *self, PyObject *args)
     if (rc < 0) {
         /* CLEAN: PYLIBSSH2_Sftp_CANT_WRITE_MSG */
         PyErr_Format(PYLIBSSH2_Error, "Unable to write sftp.");
-        Py_INCREF(Py_None);
-        return Py_None;
+        return NULL;
     }
 
     return Py_BuildValue("i", rc);
@@ -614,8 +607,7 @@ PYLIBSSH2_Sftp_symlink(PYLIBSSH2_SFTP *self, PyObject *args)
     if (rc == -1) {
         /* CLEAN: PYLIBSSH2_SFTP_CANT_SYMLINK_MSG */
         PyErr_SetString(PYLIBSSH2_Error, "Unable to sftp symlink.");
-        Py_INCREF(Py_None);
-        return Py_None;
+        return NULL;
     }
 
     return Py_BuildValue("i", rc);
@@ -651,8 +643,7 @@ PYLIBSSH2_Sftp_get_stat(PYLIBSSH2_SFTP *self, PyObject *args)
     if (rc == -1) {
         /* CLEAN: PYLIBSSH2_SFTP_CANT_GETSTAT_MSG */
         PyErr_SetString(PYLIBSSH2_Error, "Unable to get stat.");
-        Py_INCREF(Py_None);
-        return Py_None;
+        return NULL;
     }
 
     return get_attrs(&attr);
@@ -716,8 +707,7 @@ PYLIBSSH2_Sftp_set_stat(PYLIBSSH2_SFTP *self, PyObject *args)
 
     if (rc == -1) {
         PyErr_SetString(PYLIBSSH2_Error, "Unable to stat.");
-        Py_INCREF(Py_None);
-        return Py_None;
+        return NULL;
     }
 
     return Py_BuildValue("i", rc);
