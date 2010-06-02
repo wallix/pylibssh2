@@ -26,7 +26,7 @@ import tty, termios
 import libssh2
 
 usage = """Do a SSH connection with username@hostname
-Usage: ssh.py <hostname> <username> <password>"""
+Usage: %s <hostname> <username> <password>""" % __file__[__file__.rfind('/')+1:]
 
 class MySSHClient:
     def __init__(self, hostname, username, password, port=22):

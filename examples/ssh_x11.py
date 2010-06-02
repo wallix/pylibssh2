@@ -30,7 +30,7 @@ import libssh2
 from libssh2 import SessionException, ChannelException
 
 usage = """Do a X11 SSH connection with username@hostname
-Usage: ssh_x11.py <hostname> <username> <password> <port>"""
+Usage: %s <hostname> <username> <password> <port>""" % __file__[__file__.rfind('/')+1:]
 
 def remove_node(elem):
     x11_channels.remove(elem)

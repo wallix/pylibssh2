@@ -23,7 +23,7 @@ import socket, sys
 import libssh2
 
 usage = """Do a SCP send <file> with username@hostname:/remote_path/
-Usage: scp.py <hostname> <username> <password> <file>"""
+Usage: %s <hostname> <username> <password> <file>""" % __file__[__file__.rfind('/')+1:]
 
 class MySCPClient:
     def __init__(self, hostname, username, password, port=22):

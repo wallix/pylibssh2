@@ -25,7 +25,7 @@ import libssh2
 DEBUG=False
 
 usage = """Do a SSH remote command with username@hostname
-Usage: sshcmd.py <hostname> <username> <password> <command>"""
+Usage: %s <hostname> <username> <password> <command>""" % __file__[__file__.rfind('/')+1:]
 
 def my_print(args):
     if DEBUG: print(args)

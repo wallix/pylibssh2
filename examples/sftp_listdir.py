@@ -23,7 +23,7 @@ import socket, sys
 import libssh2
 
 usage = """Do a SFTP file listing of <directory> with username@hostname
-Usage: sftp.py <hostname> <username> <password> <directory>"""
+Usage: %s <hostname> <username> <password> <directory>""" % __file__[__file__.rfind('/')+1:]
 
 class MySFTPClient:
     def __init__(self, hostname, username, password, port=22):
