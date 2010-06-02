@@ -19,9 +19,10 @@
 # 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
 #
 import atexit
-import fcntl
+#import fcntl, signal, struct
 import os
-import select, signal, struct, sys
+import select, sys
+import subprocess
 from socket import socket, AF_INET, AF_UNIX, SOCK_STREAM, SHUT_RDWR
 import tty, termios
 
@@ -146,8 +147,16 @@ if __name__ == '__main__':
         # request pty
         channel.pty('xterm')
 
+        # parse xauth data
+        p = subprocess.Popen(
+            ['xauth','list'], shell=False, stdout=subprocess.PIPE
+        )
+        xauth_data = p.communicate()[0]
+        auth_protocol, auth_cookie = xauth_data.split()[1:]
+
+
         # request X11 forwarding on display 0
-        channel.x11_req(0)
+        channel.x11_req(0, auth_protocol, auth_cookie, 0)
 
         # request shell
         channel.shell()
