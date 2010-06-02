@@ -1,0 +1,5 @@
+*.pyc
+build/
+dist/
+doc/
+pylibssh2.egg-info/
