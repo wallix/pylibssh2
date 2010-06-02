@@ -254,11 +254,10 @@ PYLIBSSH2_Session_userauth_password(PYLIBSSH2_SESSION *self, PyObject *args)
     rc = libssh2_userauth_password(self->session, username, password);
     MY_END_ALLOW_THREADS(self->tstate);
 
-    if (rc) {
+    if (rc < 0) {
         /* CLEAN: PYLIBSSH2_SESSION_USERAUTH_PASSWORD_FAILED_MSG */
         PyErr_SetString(PYLIBSSH2_Error, "Authentification by password failed.");
-        Py_INCREF(Py_None);
-        return Py_None;
+        return NULL;
     }
 
     return Py_BuildValue("i", rc);
