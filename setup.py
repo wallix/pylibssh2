@@ -44,11 +44,16 @@ Topic :: Software Development :: Libraries""".split('\n')
 libssh2_src = glob.glob('src/*.c')
 libssh2_dep = glob.glob('src/*.h')
 libssh2_incdir = None
-if 'bsd' in sys.platform[-1] or 'bsd' in os.uname()[0].lower():
+libssh2_libdir = None
+
+if 'bsd' in sys.platform[:-1] or 'bsd' in os.uname()[0].lower():
     libssh2_incdir = ['/usr/local/include/']
     libssh2_libdir = ['/usr/local/lib/']
+if 'darwin' in sys.platform:
+    libssh2_incdir = ['/opt/local/include/']
+    libssh2_libdir = ['/opt/local/lib']
+
 libssh2_lib = ['ssh2']
-libssh2_libdir = None
 libssh2_compile_args = ['-ggdb']
 
 module = Extension('_libssh2',
