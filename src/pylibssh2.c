@@ -61,6 +61,7 @@ startup() -- starts up the session from a socket\n\
 userauth_authenticated() -- returns authentification status\n\
 userauth_list() -- lists the authentification methods\n\
 userauth_password() -- authenticates a session with credentials\n\
+userauth_publickey() -- authenticates a session with a publickey\n\
 userauth_publickey_fromfile() -- authenticates a session with publickey\n\
 ");
 

@@ -782,6 +782,74 @@ PYLIBSSH2_Session_set_trace(PYLIBSSH2_SESSION *self, PyObject *args)
 }
 /* }}} */
 
+/* 
+void 
+kbd_callback(const char *name, int name_len, const char *instruction,
+             int instruction_len, int num_prompts,
+             const LIBSSH2_USERAUTH_KBDINT_PROMPT *prompts,
+             LIBSSH2_USERAUTH_KBDINT_RESPONSE *responses, void **abstract)
+static PyObject *kbd_callback_func = NULL;
+*/
+
+static char *interactive_response;
+static int interactive_response_len;
+
+static void
+stub_kbd_callback_func(const char *name, int name_len,
+                       const char *instruction, int instruction_len,
+                       int num_prompts,
+                       const LIBSSH2_USERAUTH_KBDINT_PROMPT *prompts,
+                       LIBSSH2_USERAUTH_KBDINT_RESPONSE *responses,
+                       void **abstract)
+{
+    int i;
+    (void)abstract;
+
+    for (i=0; i < num_prompts; i++) {
+        responses[i].text = strdup(interactive_response);
+        responses[i].length = interactive_response_len;
+    }
+}
+
+/* {{{ PYLIBSSH2_Session_userauth_keyboardinteractive
+ */
+static char PYLIBSSH2_Session_userauth_keyboardinteractive_doc[] = "\n\
+userauth_keyboardinteractive(username)\n\
+\n\
+Authenticate a session using a challenge-response authentication\n\
+\n\
+@param username: name of user to attempt authentication\n\
+@return 0 on success or negative on failure\n\
+@rtype ";
+
+/* {{{ PYLIBSSH2_Session_userauth_keyboardinteractive
+ */
+static PyObject *
+PYLIBSSH2_Session_userauth_keyboardinteractive(PYLIBSSH2_SESSION *self, PyObject *args)
+{
+    int rc=0;
+    char *username;
+    /*PyObject *kbd_callback;*/
+
+    if(!PyArg_ParseTuple(args, "ssi:userauth_keyboardinteractive", &username, &interactive_response, &interactive_response_len)) {
+        return NULL;
+    }
+
+    Py_BEGIN_ALLOW_THREADS
+    rc = libssh2_userauth_keyboard_interactive(self->session, username, &stub_kbd_callback_func);
+    Py_END_ALLOW_THREADS
+
+    if (rc < 0) {
+        PyErr_SetString(PYLIBSSH2_Error, "Authentication by keyboard-interactive failed.");
+        return NULL;
+    }
+
+    return Py_BuildValue("i", rc);
+    
+}
+
+/* }}} */
+
 /* {{{ PYLIBSSH2_Session_methods[]
  *
  * ADD_METHOD(name) expands to a correct PyMethodDef declaration
@@ -813,6 +881,7 @@ static PyMethodDef PYLIBSSH2_Session_methods[] =
     ADD_METHOD(last_error),
     ADD_METHOD(callback_set),
     ADD_METHOD(set_trace),
+    ADD_METHOD(userauth_keyboardinteractive),
     { NULL, NULL }
 };
 #undef ADD_METHOD
