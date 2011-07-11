@@ -52,6 +52,16 @@ class Channel(object):
         self.closed = True
         return self._channel.close()
 
+    def wait_closed(self):
+        """
+        Wait for remote channel to ack closing.
+
+        @return: 0 on success or negative on failure
+        @rtype: int
+        """
+        self.closed = True
+        return self._channel.wait_closed()
+
     def eof(self):
         """
         Checks if the remote host has sent a EOF status.
@@ -93,27 +103,13 @@ class Channel(object):
         self.flushed = True
         return self._channel.flush()
 
-    def poll(self, timeout, nfds):
-        """
-        Polls for activity on the channel.
-
-        @param timeout: remaining timeout
-        @type timeout: int
-        @param nfds: number of fds to poll
-        @type nfds: int
-
-        @return: number of fds with interesting events or negative on failure
-        @rtype: int
-        """
-        return self._channel.poll(timeout, nfds)
-
     def poll_read(self, extended):
         """
         Checks if data is available on the channel.
 
         @param extended: if message channel datas is extended
         @type extended: int
-        
+
         @return: 1 when data is available or 0 otherwise
         @rtype: int
         """
@@ -131,31 +127,50 @@ class Channel(object):
         """
         return self._channel.pty(term)
 
-    def pty_resize(self, width, height):
+    def pty_resize(self, width, height, pixelwidth=0, pixelheight=0):
         """
         Requests a pty resize of the channel with given width and height.
 
-        @param width: terminal width
+        @param width: terminal width in characters
         @type width: int
-        @param height: terminal height
+        @param height: terminal height in characters
         @type height: int
+        @param pixelwidth: terminal width in pixels
+        @type pixelwidth: int
+        @param pixelheight: terminal height in pixels
+        @type pixelheight: int
 
         @return: 0 on success or negative on failure
         @rtype: int
         """
-        return self._channel.pty_resize(width, height)
+        return self._channel.pty_resize(width, height, pixelwidth, pixelheight)
 
-    def read(self, size=4096):
+    def read(self, size=1024):
         """
         Reads size bytes on the channel.
 
         @param size: size of the buffer storage
         @type size: int
-        
+
         @return: bytes readed or negative on failure
-        @rtype: str 
+        @rtype: str
         """
         return self._channel.read(size)
+
+    def read_ex(self, size=1024, stream_id=0):
+        """
+        Reads size bytes on the channel with given stream_id.
+
+        @param size: size of the buffer storage
+        @type size: int
+
+        @param stream_id: stream_id of the stream upon which to read
+        @type size: int
+
+        @return: bytes readed or negative on failure
+        @rtype: str
+        """
+        return self._channel.read_ex(size, stream_id)
 
     def send_eof(self):
         """
@@ -198,7 +213,7 @@ class Channel(object):
         """
         return self._channel.shell()
 
-    def window_read(self, read_avail, window_size_initial):
+    def window_read(self):
         """
         Checks the status of the read window on the channel.
 
@@ -207,11 +222,25 @@ class Channel(object):
         @param window_size_initial: window initial size defined
         @type window_size_initial: int
 
-        @return: the number of bytes which the remote end may send 
+        @return: the number of bytes which the remote end may send
         without overflowing the window limit
         @rtype: int
         """
-        return self._channel.window_read(read_avail, window_size_initial)
+        return self._channel.window_read()
+
+    def window_write(self):
+        """
+        window_write() -> (int, int)
+
+        check the status of the write window.
+
+
+        @return windows: the number of bytes which may be safely writen on the
+        channel without blocking.
+        @return window_size_initial: as defined by the channel_open request
+        @rtype  (int, int)
+        """
+        return self._channel.window_write()
 
     def write(self, message):
         """

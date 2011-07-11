@@ -43,6 +43,7 @@ PYLIBSSH2_Channel_close(PYLIBSSH2_CHANNEL *self, PyObject *args)
 
     MY_BEGIN_ALLOW_THREADS(self->tstate);
     rc = libssh2_channel_close(self->channel);
+    rc = libssh2_channel_wait_closed(self->channel);
     MY_END_ALLOW_THREADS(self->tstate);
 
     if (rc) {
@@ -105,19 +106,23 @@ PYLIBSSH2_Channel_pty(PYLIBSSH2_CHANNEL *self, PyObject *args)
     }
 
     return Py_BuildValue("i", rc);
-} 
+}
 /* }}} */
 
 /* {{{ PYLIBSSH2_Channel_pty_resize
  */
 static char PYLIBSSH2_Channel_pty_resize_doc[] = "\n\
-pty_resize(width, height) -> int\n\
+pty_resize(width, height, width_px, height_px) -> int\n\
 \n\
 Requests a pty resize on a channel with the given width and height.\n\
 \n\
 @param  width: terminal width\n\
 @type   width: int\n\
 @param  height: terminal height\n\
+@type   height: int\n\
+@param  width_px: terminal width in pixel (opt)\n\
+@type   height: int\n\
+@param  height_px: terminal height in pixel (opt)\n\
 @type   height: int\n\
 \n\
 @return 0 on success or negative on failure\n\
@@ -139,8 +144,8 @@ PYLIBSSH2_Channel_pty_resize(PYLIBSSH2_CHANNEL *self, PyObject *args)
     int width_px  = 0;
     int height_px = 0;
 
-    if (!PyArg_ParseTuple(args,"ii|ii:pty_resize", &width,&height,
-                                                    &width_px,&height_px)){
+    if (!PyArg_ParseTuple(args,"ii|ii:pty_resize", &width, &height,
+                                                   &width_px, &height_px)){
         return NULL;
     }
     /* FIXME: For unknown reason, the activation of the two following methods
@@ -288,8 +293,8 @@ PYLIBSSH2_Channel_setblocking(PYLIBSSH2_CHANNEL *self, PyObject *args)
         return NULL;
 
     libssh2_channel_set_blocking(self->channel, block);
-    Py_INCREF(Py_None);
 
+    Py_INCREF(Py_None);
     return Py_None;
 }
 /* }}} */
@@ -340,6 +345,55 @@ PYLIBSSH2_Channel_read(PYLIBSSH2_CHANNEL *self, PyObject *args)
     Py_INCREF(Py_None);
 
     return Py_None;
+}
+/* }}} */
+
+/* {{{ PYLIBSSH2_Channel_read_ex
+ */
+static char PYLIBSSH2_Channel_read_ex_doc[] = "\n\
+read(size, [stream_id]) -> str\n\
+\n\
+Reads size bytes on the channel.\n\
+\n\
+@param size: size of the buffer storage\n\
+@type  size: int\n\
+@param stream_id: substream ID number\n\
+@type  stream_id: int\n\
+\n\
+@return string containing bytes read or negative value on failure\n\
+@rtype  str or int";
+
+static PyObject *
+PYLIBSSH2_Channel_read_ex(PYLIBSSH2_CHANNEL *self, PyObject *args)
+{
+    int rc;
+    int buffer_size;
+    int stream_id = 0;
+    /* buffer to read as a python object */
+    PyObject *buffer;
+    char * cbuf;
+
+    if (!PyArg_ParseTuple(args, "i|i:read_ex", &buffer_size, &stream_id))
+        return NULL;
+    buffer = PyString_FromStringAndSize(NULL, buffer_size);
+    if (buffer == NULL) {
+        return NULL;
+    }
+    cbuf = PyString_AsString(buffer);
+
+    Py_BEGIN_ALLOW_THREADS
+    rc = libssh2_channel_read_ex(self->channel, stream_id, cbuf, buffer_size);
+    Py_END_ALLOW_THREADS
+
+    if (rc > 0) {
+       if (rc != buffer_size && _PyString_Resize(&buffer, rc) < 0)
+            return NULL;
+    }
+    /**
+       we do NOT increment the reference on the buffer anymore
+       it is already done by PyString_FromStringAndSize
+    */
+    return Py_BuildValue("iN", rc, buffer);
 }
 /* }}} */
 
@@ -472,6 +526,32 @@ PYLIBSSH2_Channel_send_eof(PYLIBSSH2_CHANNEL *self, PyObject *args)
 }
 /* }}} */
 
+/* {{{ PYLIBSSH2_Channel_wait_closed
+ */
+static char PYLIBSSH2_Channel_wait_closed_doc[] = "\n\
+wait_closed() -> int\n\
+\n\
+Wait for the remote channel to ack channel close.\n\
+\n\
+@param channel\n\
+@type libssh2.Channel\n\
+\n\
+@return 0 on success or negative on failure\n\
+@rtype int";
+
+static PyObject *
+PYLIBSSH2_Channel_wait_closed(PYLIBSSH2_CHANNEL *self, PyObject *args)
+{
+    int rc;
+
+    MY_BEGIN_ALLOW_THREADS(self->tstate);
+    rc = libssh2_channel_wait_closed(self->channel);
+    MY_END_ALLOW_THREADS(self->tstate);
+
+    return Py_BuildValue("i", rc);
+}
+/* }}} */
+
 /* {{{ PYLIBSSH2_Channel_window_read
  */
 static char PYLIBSSH2_Channel_window_read_doc[] = "\n\
@@ -479,70 +559,49 @@ window_read(read_avail, window_size_initial) -> int\n\
 \n\
 Checks the status of the read window.\n\
 \n\
-@param  read_avail: \n\
-@type   read_avail: int\n\
-@param  window_size_initial: \n\
-@type   window_size_initial: int\n\
 \n\
-@return the number of bytes which the remote end may send without overflowing\n\
-the window limit\n\
-@rtype  int";
+@return windows: the number of bytes which the remote end may send without\n\
+@return read_avail: number of bytes available to be read\n\
+@return window_size_initial: as defined by the channel_open request\n\
+@rtype  (int, int, int)";
 
 static PyObject *
 PYLIBSSH2_Channel_window_read(PYLIBSSH2_CHANNEL *self, PyObject *args)
 {
-    unsigned long rc;
+    unsigned long rc=0;
     unsigned long read_avail;
     unsigned long window_size_initial;
-
-    if (!PyArg_ParseTuple(args, "|ii:window_read", &read_avail, &window_size_initial)) {
-        return NULL;
-    }
 
     MY_BEGIN_ALLOW_THREADS(self->tstate);
     rc = libssh2_channel_window_read_ex(self->channel, &read_avail, &window_size_initial);
     MY_END_ALLOW_THREADS(self->tstate);
 
-    return PyInt_FromLong(rc);
+    return Py_BuildValue("(kkk)", rc, read_avail, window_size_initial);
 }
 /* }}} */
 
-/* {{{ PYLIBSSH2_Channel_poll
- */
-static char PYLIBSSH2_Channel_poll_doc[] = "\n\
-poll(timeout, [nfds]) -> int\n\
-\n\
-Polls for activity on the channel.\n\
-\n\
-@param  timeout: remaining timeout\n\
-@type   timeout: int\n\
-@param  nfds: number of fds to poll\n\
-@type   nfds: int\n\
-\n\
-@return number of fds with interesting events or negative on failure\n\
-@rtype  int";
+static char PYLIBSSH2_Channel_window_write_doc[] = "\n"
+"window_write(write_avail) -> int\n"
+"\n"
+"check the status of the write window.\n"
+"\n"
+"\n"
+"@return windows: the number of bytes which may be safely writen on the\n"
+"channel without blocking."
+"@return window_size_initial: as defined by the channel_open request\n"
+"@rtype  (int, int)";
 
 static PyObject *
-PYLIBSSH2_Channel_poll(PYLIBSSH2_CHANNEL *self, PyObject *args)
+PYLIBSSH2_Channel_window_write(PYLIBSSH2_CHANNEL *self)
 {
-    int rc;
-    int nfds = 1;
-    long timeout = 0;
-    LIBSSH2_POLLFD fds;
-
-    if (!PyArg_ParseTuple(args, "i|i:poll", &timeout, &nfds)) {
-        return NULL;
-    }
-
-    fds.type = LIBSSH2_POLLFD_CHANNEL;
-    fds.fd.channel = self->channel; /*see PYLIBSSH2_CHANNEL struct*/
-    fds.events  = LIBSSH2_POLLFD_POLLIN;
+    unsigned long rc=0;
+    unsigned long window_size_initial;
 
     MY_BEGIN_ALLOW_THREADS(self->tstate);
-    rc = libssh2_poll(&fds, nfds, timeout);
+    rc = libssh2_channel_window_write_ex(self->channel, &window_size_initial);
     MY_END_ALLOW_THREADS(self->tstate);
 
-    return Py_BuildValue("i", rc);
+    return Py_BuildValue("(kk)", rc, window_size_initial);
 }
 /* }}} */
 
@@ -574,7 +633,7 @@ PYLIBSSH2_Channel_x11_req(PYLIBSSH2_CHANNEL *self, PyObject *args)
     char *auth_cookie = NULL;
     int display = 0;
 
-    if (!PyArg_ParseTuple(args, "|issi:poll_x11_req", &single_connection, &auth_proto, &auth_cookie, &display)) {
+    if (!PyArg_ParseTuple(args, "|issi:x11_req", &single_connection, &auth_proto, &auth_cookie, &display)) {
         return NULL;
     }
 
@@ -626,7 +685,7 @@ PYLIBSSH2_Channel_poll_read(PYLIBSSH2_CHANNEL *self, PyObject *args)
 
 #define ADD_METHOD(name) \
 { #name, (PyCFunction)PYLIBSSH2_Channel_##name, METH_VARARGS, PYLIBSSH2_Channel_##name##_doc }
-static PyMethodDef PYLIBSSH2_Channel_methods[] = 
+static PyMethodDef PYLIBSSH2_Channel_methods[] =
 {
     ADD_METHOD(close),
     ADD_METHOD(pty),
@@ -635,16 +694,18 @@ static PyMethodDef PYLIBSSH2_Channel_methods[] =
     ADD_METHOD(execute),
     ADD_METHOD(setenv),
     ADD_METHOD(setblocking),
+    ADD_METHOD(read_ex),
     ADD_METHOD(read),
     ADD_METHOD(write),
     ADD_METHOD(flush),
     ADD_METHOD(eof),
-    ADD_METHOD(send_eof),
-    ADD_METHOD(window_read),
-    ADD_METHOD(poll_read),
-    ADD_METHOD(poll),
-    ADD_METHOD(x11_req),
     ADD_METHOD(exit_status),
+    ADD_METHOD(send_eof),
+    ADD_METHOD(wait_closed),
+    ADD_METHOD(window_read),
+    ADD_METHOD(window_write),
+    ADD_METHOD(poll_read),
+    ADD_METHOD(x11_req),
     { NULL, NULL }
 };
 #undef ADD_METHOD
@@ -725,7 +786,7 @@ init_libssh2_Channel(PyObject *dict)
     PYLIBSSH2_Channel_Type.ob_type = &PyType_Type;
     Py_XINCREF(&PYLIBSSH2_Channel_Type);
     PyDict_SetItemString(dict, "ChannelType", (PyObject *)&PYLIBSSH2_Channel_Type);
-     
+
     return 1;
 }
 /* }}} */
