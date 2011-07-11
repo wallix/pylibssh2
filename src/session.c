@@ -179,8 +179,8 @@ PYLIBSSH2_Session_userauth_list(PYLIBSSH2_SESSION *self, PyObject *args)
 
     auth_list=libssh2_userauth_list(self->session, username, username_len);
     if (auth_list == NULL) {
-        Py_INCREF(Py_None);
-        return Py_None;
+       PyErr_SetString(PYLIBSSH2_Error, "Authentication methods listing failed.");
+       return NULL;
     }
 
     return PyString_FromString(auth_list);
