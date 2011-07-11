@@ -33,7 +33,6 @@ extern PyTypeObject PYLIBSSH2_Channel_Type;
 typedef struct {
     PyObject_HEAD
     LIBSSH2_CHANNEL *channel;
-    PyThreadState   *tstate;
     int             dealloc;
 } PYLIBSSH2_CHANNEL;
 

@@ -41,10 +41,10 @@ PYLIBSSH2_Channel_close(PYLIBSSH2_CHANNEL *self, PyObject *args)
 {
     int rc;
 
-    MY_BEGIN_ALLOW_THREADS(self->tstate);
+    Py_BEGIN_ALLOW_THREADS
     rc = libssh2_channel_close(self->channel);
     rc = libssh2_channel_wait_closed(self->channel);
-    MY_END_ALLOW_THREADS(self->tstate);
+    Py_END_ALLOW_THREADS
 
     if (rc) {
         /* CLEAN: PYLIBSSH2_CHANNEL_CANT_CLOSE_MSG */
@@ -94,10 +94,10 @@ PYLIBSSH2_Channel_pty(PYLIBSSH2_CHANNEL *self, PyObject *args)
         return NULL;
     }
 
-    MY_BEGIN_ALLOW_THREADS(self->tstate);
+    Py_BEGIN_ALLOW_THREADS
     rc = libssh2_channel_request_pty_ex(self->channel, term, term_len, modes, modes_len,
                                         width, height, width_px, height_px);
-    MY_END_ALLOW_THREADS(self->tstate);
+    Py_END_ALLOW_THREADS
 
     if (rc) {
         /* CLEAN: PYLIBSSH2_CHANNEL_PTY_FAILED_MSG */ 
@@ -148,14 +148,11 @@ PYLIBSSH2_Channel_pty_resize(PYLIBSSH2_CHANNEL *self, PyObject *args)
                                                    &width_px, &height_px)){
         return NULL;
     }
-    /* FIXME: For unknown reason, the activation of the two following methods
-     * provokes a core dump of the lib with the following error:
-     * PyEval_RestoreThread: NULL tstate
-     */
-    /*MY_BEGIN_ALLOW_THREADS(self->tstate);*/
+
+    Py_BEGIN_ALLOW_THREADS
     rc = libssh2_channel_request_pty_size_ex(self->channel, width, height,
                                                 width_px, height_px);
-    /*MY_END_ALLOW_THREADS(self->tstate);*/
+    Py_END_ALLOW_THREADS
 
     if (rc) {
         PyErr_SetString(PYLIBSSH2_Error, "Failed to resize pty");
@@ -181,9 +178,9 @@ PYLIBSSH2_Channel_shell(PYLIBSSH2_CHANNEL *self, PyObject *args)
 {
     int rc;
 
-    MY_BEGIN_ALLOW_THREADS(self->tstate);
+    Py_BEGIN_ALLOW_THREADS
     rc = libssh2_channel_shell(self->channel);
-    MY_END_ALLOW_THREADS(self->tstate);
+    Py_END_ALLOW_THREADS
 
     if (rc) {
         /* CLEAN: PYLIBSSH2_CHANNEL_CANT_REQUEST_SHELL_MSG */
@@ -218,9 +215,9 @@ PYLIBSSH2_Channel_execute(PYLIBSSH2_CHANNEL *self, PyObject *args)
     if (!PyArg_ParseTuple(args, "s:execute", &command))
         return NULL;
 
-    MY_BEGIN_ALLOW_THREADS(self->tstate);
+    Py_BEGIN_ALLOW_THREADS
     rc = libssh2_channel_exec(self->channel, command);
-    MY_END_ALLOW_THREADS(self->tstate);
+    Py_END_ALLOW_THREADS
 
     if (rc) {
         /* CLEAN: PYLIBSSH2_CANT_REQUEST_EXEC_COMMAND_MSG */
@@ -259,9 +256,9 @@ PYLIBSSH2_Channel_setenv(PYLIBSSH2_CHANNEL *self, PyObject *args)
     if (!PyArg_ParseTuple(args, "ss:setenv", &env_key, &env_val))
         return NULL;
 
-    MY_BEGIN_ALLOW_THREADS(self->tstate);
+    Py_BEGIN_ALLOW_THREADS
     rc = libssh2_channel_setenv(self->channel, env_key, env_val);
-    MY_END_ALLOW_THREADS(self->tstate);
+    Py_END_ALLOW_THREADS
 
     if (rc == -1) {
         /* CLEAN: PYLIBSSH2_CANT_SET_ENVRIONNEMENT_VARIABLE_MSG */
@@ -329,10 +326,10 @@ PYLIBSSH2_Channel_read(PYLIBSSH2_CHANNEL *self, PyObject *args)
     }
 
     if (libssh2_channel_eof(self->channel) != 1) {
-        MY_BEGIN_ALLOW_THREADS(self->tstate);
+        Py_BEGIN_ALLOW_THREADS
         rc = libssh2_channel_read(self->channel, PyString_AsString(buffer),
                                   buffer_size);
-        MY_END_ALLOW_THREADS(self->tstate);
+        Py_END_ALLOW_THREADS
 
         if (rc > 0) {
             if (rc != buffer_size && _PyString_Resize(&buffer, rc) < 0)
@@ -420,9 +417,9 @@ PYLIBSSH2_Channel_write(PYLIBSSH2_CHANNEL *self, PyObject *args)
     if (!PyArg_ParseTuple(args, "s#:write", &message, &message_len))
         return NULL;
 
-    MY_BEGIN_ALLOW_THREADS(self->tstate);
+    Py_BEGIN_ALLOW_THREADS
     rc = libssh2_channel_write(self->channel, message, message_len);
-    MY_END_ALLOW_THREADS(self->tstate);
+    Py_END_ALLOW_THREADS
 
     if (rc == -1) {
         /* CLEAN: PYLIBSSH2_CANT_WRITE_CHANNEL_MSG */
@@ -449,9 +446,9 @@ PYLIBSSH2_Channel_flush(PYLIBSSH2_CHANNEL *self, PyObject *args)
 {
     int rc;
 
-    MY_BEGIN_ALLOW_THREADS(self->tstate);
+    Py_BEGIN_ALLOW_THREADS
     rc = libssh2_channel_flush(self->channel);
-    MY_END_ALLOW_THREADS(self->tstate);
+    Py_END_ALLOW_THREADS
 
     if (rc == -1) {
         /* CLEAN: PYLIBSSH2_CANT_FLUSH_CHANNEL_MSG */
@@ -512,9 +509,9 @@ PYLIBSSH2_Channel_send_eof(PYLIBSSH2_CHANNEL *self, PyObject *args)
 {
     int rc;
 
-    MY_BEGIN_ALLOW_THREADS(self->tstate);
+    Py_BEGIN_ALLOW_THREADS
     rc = libssh2_channel_send_eof(self->channel);
-    MY_END_ALLOW_THREADS(self->tstate);
+    Py_END_ALLOW_THREADS
 
     if (rc == -1) {
         /* CLEAN: PYLIBSSH2_CANT_SEND_EOF_MSG */
@@ -544,9 +541,9 @@ PYLIBSSH2_Channel_wait_closed(PYLIBSSH2_CHANNEL *self, PyObject *args)
 {
     int rc;
 
-    MY_BEGIN_ALLOW_THREADS(self->tstate);
+    Py_BEGIN_ALLOW_THREADS
     rc = libssh2_channel_wait_closed(self->channel);
-    MY_END_ALLOW_THREADS(self->tstate);
+    Py_END_ALLOW_THREADS
 
     return Py_BuildValue("i", rc);
 }
@@ -572,9 +569,9 @@ PYLIBSSH2_Channel_window_read(PYLIBSSH2_CHANNEL *self, PyObject *args)
     unsigned long read_avail;
     unsigned long window_size_initial;
 
-    MY_BEGIN_ALLOW_THREADS(self->tstate);
+    Py_BEGIN_ALLOW_THREADS
     rc = libssh2_channel_window_read_ex(self->channel, &read_avail, &window_size_initial);
-    MY_END_ALLOW_THREADS(self->tstate);
+    Py_END_ALLOW_THREADS
 
     return Py_BuildValue("(kkk)", rc, read_avail, window_size_initial);
 }
@@ -597,9 +594,9 @@ PYLIBSSH2_Channel_window_write(PYLIBSSH2_CHANNEL *self)
     unsigned long rc=0;
     unsigned long window_size_initial;
 
-    MY_BEGIN_ALLOW_THREADS(self->tstate);
+    Py_BEGIN_ALLOW_THREADS
     rc = libssh2_channel_window_write_ex(self->channel, &window_size_initial);
-    MY_END_ALLOW_THREADS(self->tstate);
+    Py_END_ALLOW_THREADS
 
     return Py_BuildValue("(kk)", rc, window_size_initial);
 }
@@ -637,9 +634,9 @@ PYLIBSSH2_Channel_x11_req(PYLIBSSH2_CHANNEL *self, PyObject *args)
         return NULL;
     }
 
-    MY_BEGIN_ALLOW_THREADS(self->tstate);
+    Py_BEGIN_ALLOW_THREADS
     rc = libssh2_channel_x11_req_ex(self->channel, single_connection, auth_proto, auth_cookie, display);
-    MY_END_ALLOW_THREADS(self->tstate);
+    Py_END_ALLOW_THREADS
 
     return Py_BuildValue("i", rc);
 }
@@ -668,9 +665,9 @@ PYLIBSSH2_Channel_poll_read(PYLIBSSH2_CHANNEL *self, PyObject *args)
         return NULL;
     }
 
-    MY_BEGIN_ALLOW_THREADS(self->tstate);
+    Py_BEGIN_ALLOW_THREADS
     rc = libssh2_poll_channel_read(self->channel, extended);
-    MY_END_ALLOW_THREADS(self->tstate);
+    Py_END_ALLOW_THREADS;
 
     return Py_BuildValue("i", rc);
 }
@@ -724,7 +721,6 @@ PYLIBSSH2_Channel_New(LIBSSH2_CHANNEL *channel, int dealloc)
     }
 
     self->channel = channel;
-    self->tstate = NULL;
     self->dealloc = dealloc;
 
     return self;

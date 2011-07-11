@@ -34,7 +34,6 @@ typedef struct {
     PyObject_HEAD
     LIBSSH2_SESSION *session;
     PyObject        *socket;
-    PyThreadState   *tstate;
     int             dealloc;
     int             opened;
 } PYLIBSSH2_SESSION;

@@ -42,20 +42,6 @@
 
 /* Python module's Error */
 extern PyObject *PYLIBSSH2_Error;
-/* Thread support
- *
- * WITH_THREAD is defined in /usr/include/python2.{4,5,6}/pyconfig.h
- *
- * */
-#ifdef WITH_THREAD
-#   define MY_BEGIN_ALLOW_THREADS(st) \
-    { st = PyEval_SaveThread(); }
-#   define MY_END_ALLOW_THREADS(st) \
-    { PyEval_RestoreThread(st);}
-#else
-#   define MY_BEGIN_ALLOW_THREADS(st)
-#   define MY_END_ALLOW_THREADS(st) { st = NULL; }
-#endif
 
 #ifdef exception_from_error_queue
 #   undef exception_from_error_queue
