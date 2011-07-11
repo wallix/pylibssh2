@@ -19,11 +19,12 @@
 # 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
 #
 import atexit
-
 import select, socket, sys
 import tty, termios
 
 import libssh2
+
+DEBUG=False
 
 usage = """Do a SSH connection with username@hostname
 Usage: %s <hostname> <username> <password>""" % __file__[__file__.rfind('/')+1:]
@@ -52,6 +53,9 @@ class MySSHClient:
             self.session.startup(self.sock)
             
             # authentication
+            auth_list = self.session.userauth_list(self.username)
+            if DEBUG:
+                sys.stdout.write("Authentication that can continue %s\r\n" % auth_list)
             self.session.userauth_password(self.username, self.password)
 
         except Exception, e:
