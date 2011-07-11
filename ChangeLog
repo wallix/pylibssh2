@@ -1,3 +1,11 @@
+
+2011-07-11  Olivier Hervieu <olivier.hervieu@gmail.com>
+
+	* Remove MY_BEGIN_ALLOW_THREAD macro and replace it with the stand PY_BEGIN_ALLOW_THREAD one
+	* Various improvement in channel handling.
+	* Add support for keyboard interactive autentication
+	* Add a test suite
+
 2010-02-09  Sofian Brabez <sbz@wallix.com>
 
 	* First release
