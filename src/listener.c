@@ -36,9 +36,9 @@ PYLIBSSH2_Listener_accept(PYLIBSSH2_LISTENER *self, PyObject *args)
 {
     LIBSSH2_CHANNEL *channel;
 
-    MY_BEGIN_ALLOW_THREADS(self->tstate);
+    Py_BEGIN_ALLOW_THREADS
     channel = libssh2_channel_forward_accept(self->listener);
-    MY_END_ALLOW_THREADS(self->tstate);
+    Py_END_ALLOW_THREADS
 
     if (channel == NULL) {
         PyErr_SetString(PYLIBSSH2_Error, "Unable to accept listener on channel.");
@@ -64,9 +64,9 @@ PYLIBSSH2_Listener_cancel(PYLIBSSH2_LISTENER *self, PyObject *args)
 {
     int rc;
     
-    MY_BEGIN_ALLOW_THREADS(self->tstate);
+    Py_BEGIN_ALLOW_THREADS
     rc = libssh2_channel_forward_cancel(self->listener);
-    MY_END_ALLOW_THREADS(self->tstate);
+    Py_END_ALLOW_THREADS
 
     return Py_BuildValue("i", rc);
 }
@@ -103,7 +103,6 @@ PYLIBSSH2_Listener_New(LIBSSH2_LISTENER *listener, int dealloc)
 
     self->listener = listener;
     self->dealloc = dealloc;
-    self->tstate = NULL;
 
     return self;
 }

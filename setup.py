@@ -20,10 +20,18 @@
 """
     Installation script for the libssh2 module
 """
-from distutils.core import setup, Extension
-import os, sys, glob
+from distutils.core import setup
+from distutils.core import Command
+from distutils.core import Extension
+from distutils.util import get_platform
+from platform import python_version
 
+import os, subprocess, sys, glob
+
+sys.path.append('tests')
+sys.path.append("build/lib.%s-%s" % (get_platform(), python_version()[:3]))
 sys.path.append('libssh2')
+
 import version as info
 
 version = info.__version__
@@ -51,10 +59,29 @@ if 'bsd' in sys.platform[:-1] or 'bsd' in os.uname()[0].lower():
     libssh2_libdir = ['/usr/local/lib/']
 if 'darwin' in sys.platform:
     libssh2_incdir = ['/opt/local/include/']
-    libssh2_libdir = ['/opt/local/lib']
+    libssh2_libdir = ['/opt/local/lib/']  
 
 libssh2_lib = ['ssh2']
 libssh2_compile_args = ['-ggdb']
+
+class Libssh2TestCommand(Command):
+    user_options = []
+    
+    def initialize_options(self): 
+        pass
+    def finalize_options(self):
+        pass
+
+    def run(self):
+        import unittest
+        from test_session import SessionTest
+
+        suite = unittest.TestSuite()
+        suite.addTest(unittest.makeSuite(SessionTest))
+
+        runner = unittest.TextTestRunner()
+        runner.run(suite)
+
 
 module = Extension('_libssh2',
                     define_macros = [
@@ -84,4 +111,5 @@ setup(name='pylibssh2',
       license = 'LGPL',
       platforms = ['Linux', 'BSD'],
       long_description = long_description,
-      classifiers=classifiers)
+      classifiers=classifiers,
+      cmdclass= {'test' : Libssh2TestCommand})

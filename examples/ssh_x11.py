@@ -50,28 +50,10 @@ def x11_callback(session, channel, shost, sport, abstract):
     display_port = display[display.index(":")+1]
     _path_unix_x = "/tmp/.X11-unix/X%s" % display_port
     if display[:5] == "unix:" or display[0] == ':':
-        x11_sock = socket(AF_UNIX, SOCK_STREAM)
-        x11_sock.connect(_path_unix_x)
-    x11_channels.append(X11Channel(channel, x11_sock))
-
-def x11_send_recieve(channel, sock):
-    rc=0
-    rc = channel.poll(0, 1)
-    if rc > 0:
-        data = channel.read(buffsize)
-        sock.sendall(data)
-
-    r, w, x = select.select([sock], [], [], 0.01)
-    if r:
-        data = sock.recv(buffsize)
-        if data is None:
-            return -1
-        channel.write(data)
-
-    if channel.eof():
-        return -1
-    else:
-        return 0
+        sock = socket(AF_UNIX, SOCK_STREAM)
+        sock.connect(_path_unix_x)
+    channel.setblocking(0)
+    x11_channels.append((sock, channel))
 
 def trace(session):
     if DEBUG and session:
@@ -82,16 +64,11 @@ def trace(session):
             libssh2.LIBSSH2_TRACE_ERROR
         )
 
-class X11Channel(object):
-    def __init__(self, chan, sock):
-        self.chan = chan
-        self.sock = sock
-
 if __name__ == '__main__':
     if len(sys.argv) == 1:
         print usage
         sys.exit(1)
-    
+
     DEBUG=False
     x11_channels = []
     buffsize = 8192
@@ -108,7 +85,7 @@ if __name__ == '__main__':
     sock = socket(AF_INET, SOCK_STREAM)
     try:
         sock.connect((hostname, port))
-        sock.setblocking(1)
+        sock.setblocking(0)
     except Exception, e:
         print "Can't connect socket to (%s:%d): %s" % (
            hostname, port, e
@@ -154,46 +131,50 @@ if __name__ == '__main__':
         xauth_data = p.communicate()[0]
         auth_protocol, auth_cookie = xauth_data.split()[1:]
 
-
         # request X11 forwarding on display 0
         channel.x11_req(0, auth_protocol, auth_cookie, 0)
 
         # request shell
         channel.shell()
+        channel.setblocking(0)
 
         # enable raw mode
         raw_mode(fd)
 
         while True:
-            # XXX tty resize
-            #win = struct.unpack(
-            #    'hh',
-            #    fcntl.ioctl(fd, termios.TIOCGWINSZ, 4*' ')
-            #)
-            # width, height
-            #channel.pty_resize(win[1], win[0])
+            socks = [fd] + [sock for sock, _ in x11_channels]
+            r, w, x = select.select(socks, [], [], 0.01)
 
-            # polling on tty channel
-            rc = channel.poll(0, 1)
-            if rc > 0:
-                data = channel.read(buffsize)
+            # reading input from tty channel
+            status, data = channel.read_ex(buffsize)
+            if status > 0:
                 sys.stdout.write(data)
             else:
                 sys.stdout.flush()
 
-            # polling on x11 channels
-            if len(x11_channels) != 0:
-                for x11_channel in x11_channels:
-                    rc = x11_send_recieve(x11_channel.chan, x11_channel.sock)
-                    if rc == -1:
-                        x11_channel.sock.shutdown(SHUT_RDWR)
-                        x11_channel.sock.close()
-                        remove_node(x11_channel)
-
-            r, w, x = select.select([fd], [], [], 0.01)
-            if sys.stdin.fileno() in r:
+            if fd in r:
                 data = sys.stdin.read(1).replace('\n','\r\n')
                 channel.write(data)
+
+            for sock, x11_chan in list(x11_channels):
+                status, data = x11_chan.read_ex(buffsize)
+                if status > 0:
+                    sock.sendall(data)
+
+                if sock in r:
+                    data = sock.recv(buffsize)
+                    if data is None:
+                        sock.shutdown(SHUT_RDWR)
+                        sock.close()
+                        x11_channels.remove((x11_chan, sock))
+                    else:
+                        x11_chan.write(data)
+
+                if x11_chan.eof():
+                    sock.shutdown(SHUT_RDWR)
+                    sock.close()
+                    x11_channels.remove((sock, x11_chan))
+                    continue
 
             if channel.eof():
                 break

@@ -62,7 +62,7 @@ class Session(object):
         @return: 0 on success or negative on failure
         @rtype: int
         """
-        self._session.close(reason)
+        return self._session.close(reason)
 
     def direct_tcpip(self, host, port, shost, sport):
         """
@@ -249,7 +249,7 @@ class Session(object):
         methods
         @rtype: str
         """
-        self._session.userauth_list(username)
+        return self._session.userauth_list(username)
 
     def userauth_password(self, username, password):
         """
@@ -263,7 +263,7 @@ class Session(object):
         @return: 0 on success or negative on failure
         @rtype: int
         """
-        self._session.userauth_password(username, password)
+        return self._session.userauth_password(username, password)
 
     def userauth_publickey_fromfile(
             self, username, publickey, privatekey, passphrase
@@ -284,4 +284,21 @@ class Session(object):
         @return: 0 on success or negative on failure
         @rtype: int
         """
-        raise NotImplementedError()
+        return self._session.userauth_publickey_fromfile(username, publickey,
+                                                         privatekey, passphrase)
+
+    def userauth_keyboardinteractive(self, username, password):
+        """
+        Authenticates a session with the given username using a
+        challenge-response authentication.
+
+        @param username: user to authenticate
+        @type username: str
+        @param password: password using to fake keyboard method
+        @type: str
+        
+        @return: 0 on success or negative on failure
+        @rtype: int
+        """
+        return self._session.userauth_keyboardinteractive(username, password,
+                                                   len(password))

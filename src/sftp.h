@@ -33,7 +33,6 @@ extern PyTypeObject PYLIBSSH2_Sftp_Type;
 typedef struct {
     PyObject_HEAD
     LIBSSH2_SFTP    *sftp;
-    PyThreadState   *tstate;
     int             dealloc;
 } PYLIBSSH2_SFTP;
 

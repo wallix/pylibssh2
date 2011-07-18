@@ -7,10 +7,11 @@ pylibssh2
 :License: LGPL
 :Homepage: http://github.com/wallix/pylibssh2
 
-pylibssh2 1.0.0
+pylibssh2 1.1.0
 ================
 
-1.0.0 release, X may 2010
+1.0.0 release, may 2010
+1.1.0 release, july 2011
 
 What
 ----
@@ -83,6 +84,8 @@ Download tarballs at
 Example
 -------
 
+These following examples are located in examples/ directory.
+
 :scp_upload.py:
     dummy version of scp upload file transfer with pylibssh2.
 
@@ -98,7 +101,8 @@ Example
     shell.
 
 :ssh_x11.py:
-    this example show how to implement a X11 fowarding ssh client.
+    this example demonstrate how implement a X11 forwarding client with
+    pylibssh2.
 
 Documentation
 -------------
@@ -107,6 +111,10 @@ API documentation can be generated with epydoc <http://epydoc.sourceforge.net/>
 with following command line::
 
     epydoc --no-private -n pylibssh2 -o doc libssh2
+
+    or
+
+    make doc
 
 Install
 -------
