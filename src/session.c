@@ -235,7 +235,7 @@ PYLIBSSH2_Session_hostkey_hash(PYLIBSSH2_SESSION *self, PyObject *args)
     memcpy(buff, hash, len);
     buff[len] = '\0';
 
-    return PyString_FromString(hash);
+    return PyString_FromString(buff);
 }
 /* }}} */
 
