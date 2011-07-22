@@ -26,7 +26,7 @@ from distutils.core import Extension
 from distutils.util import get_platform
 from platform import python_version
 
-import os, subprocess, sys, glob
+import os, sys, glob
 
 sys.path.append('tests')
 sys.path.append("build/lib.%s-%s" % (get_platform(), python_version()[:3]))
