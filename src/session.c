@@ -235,7 +235,7 @@ Authenticates a session with the given username and password.\n\
 @param  password: password to use for the authentication\n\
 @type   password: str\n\
 \n\
-@return 0 on success or negative on failure\n\
+@return 0 on success or raise an exception on failure\n\
 @rtype  int";
 
 static PyObject *
