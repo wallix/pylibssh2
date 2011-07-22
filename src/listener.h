@@ -33,7 +33,6 @@ extern PyTypeObject PYLIBSSH2_Listener_Type;
 typedef struct {
     PyObject_HEAD
     LIBSSH2_LISTENER *listener;
-    PyThreadState    *tstate;
     int              dealloc;
 } PYLIBSSH2_LISTENER;
 

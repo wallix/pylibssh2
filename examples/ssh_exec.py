@@ -55,7 +55,6 @@ class SSHRemoteClient(object):
         my_print(self.session.last_error())
 
     def execute(self, command="uname -a"):
-        datas = []
         buffer = 4096
         rc = self.channel.execute(command)
         my_print(rc)

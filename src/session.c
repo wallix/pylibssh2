@@ -80,9 +80,9 @@ PYLIBSSH2_Session_startup(PYLIBSSH2_SESSION *self, PyObject *args)
     Py_XINCREF(socket);
     self->socket = socket;
     fd = PyObject_AsFileDescriptor(socket);
-    MY_BEGIN_ALLOW_THREADS(self->tstate);
+    Py_BEGIN_ALLOW_THREADS
     rc = libssh2_session_startup(self->session, fd);
-    MY_END_ALLOW_THREADS(self->tstate);
+    Py_END_ALLOW_THREADS
 
     if (rc) {
         libssh2_session_last_error(self->session, &last_error, NULL, 0);
@@ -120,9 +120,9 @@ PYLIBSSH2_Session_close(PYLIBSSH2_SESSION *self, PyObject *args)
         return NULL;
     }
 
-    MY_BEGIN_ALLOW_THREADS(self->tstate);
+    Py_BEGIN_ALLOW_THREADS
     rc = libssh2_session_disconnect(self->session, reason);
-    MY_END_ALLOW_THREADS(self->tstate);
+    Py_END_ALLOW_THREADS
 
     if (rc) {
         /* CLEAN: PYLIBSSH2_SESSION_CLOSE_MSG */
@@ -179,8 +179,8 @@ PYLIBSSH2_Session_userauth_list(PYLIBSSH2_SESSION *self, PyObject *args)
 
     auth_list=libssh2_userauth_list(self->session, username, username_len);
     if (auth_list == NULL) {
-        Py_INCREF(Py_None);
-        return Py_None;
+       PyErr_SetString(PYLIBSSH2_Error, "Authentication methods listing failed.");
+       return NULL;
     }
 
     return PyString_FromString(auth_list);
@@ -210,9 +210,9 @@ PYLIBSSH2_Session_hostkey_hash(PYLIBSSH2_SESSION *self, PyObject *args)
         return NULL;
     }
 
-    MY_BEGIN_ALLOW_THREADS(self->tstate);
+    Py_BEGIN_ALLOW_THREADS
     hash = libssh2_hostkey_hash(self->session, hashtype);
-    MY_END_ALLOW_THREADS(self->tstate);
+    Py_END_ALLOW_THREADS
 
     if (hash == NULL) {
         Py_INCREF(Py_None);
@@ -248,9 +248,9 @@ PYLIBSSH2_Session_userauth_password(PYLIBSSH2_SESSION *self, PyObject *args)
     if (!PyArg_ParseTuple(args, "ss:userauth_password", &username, &password))
         return NULL;
 
-    MY_BEGIN_ALLOW_THREADS(self->tstate);
+    Py_BEGIN_ALLOW_THREADS
     rc = libssh2_userauth_password(self->session, username, password);
-    MY_END_ALLOW_THREADS(self->tstate);
+    Py_END_ALLOW_THREADS
 
     if (rc < 0) {
         /* CLEAN: PYLIBSSH2_SESSION_USERAUTH_PASSWORD_FAILED_MSG */
@@ -297,10 +297,10 @@ PYLIBSSH2_Session_userauth_publickey_fromfile(PYLIBSSH2_SESSION *self, PyObject 
         return NULL;
     }
 
-    MY_BEGIN_ALLOW_THREADS(self->tstate);
+    Py_BEGIN_ALLOW_THREADS
     rc = libssh2_userauth_publickey_fromfile(self->session, username, publickey,
                                              privatekey, passphrase);
-    MY_END_ALLOW_THREADS(self->tstate);
+    Py_END_ALLOW_THREADS
 
     if (rc) {
         libssh2_session_last_error(self->session, &last_error, NULL, 0);
@@ -557,9 +557,9 @@ PYLIBSSH2_Session_direct_tcpip(PYLIBSSH2_SESSION *self, PyObject *args)
         return NULL;
     }
 
-    MY_BEGIN_ALLOW_THREADS(self->tstate);
+    Py_BEGIN_ALLOW_THREADS
     channel = libssh2_channel_direct_tcpip_ex(self->session, host, port, shost, sport);
-    MY_END_ALLOW_THREADS(self->tstate);
+    Py_END_ALLOW_THREADS
 
     if (channel == NULL) {
         libssh2_session_last_error(self->session, &last_error, NULL, 0);
@@ -605,10 +605,10 @@ PYLIBSSH2_Session_forward_listen(PYLIBSSH2_SESSION *self, PyObject *args)
         return NULL;
     }
 
-    MY_BEGIN_ALLOW_THREADS(self->tstate);
+    Py_BEGIN_ALLOW_THREADS
     listener = libssh2_channel_forward_listen_ex(self->session, host, port,
                                                  bound_port, queue_maxsize);
-    MY_END_ALLOW_THREADS(self->tstate);
+    Py_END_ALLOW_THREADS
 
     if (listener == NULL) {
         /* CLEAN: PYLIBSSH2_SESSION_TCP_CONNECT_ERROR_MSG */
@@ -636,9 +636,9 @@ PYLIBSSH2_Session_last_error(PYLIBSSH2_SESSION *self, PyObject *args)
     char *errmsg;
     int rc,want_buf=0;
 
-    MY_BEGIN_ALLOW_THREADS(self->tstate);
+    Py_BEGIN_ALLOW_THREADS
     rc=libssh2_session_last_error(self->session, &errmsg, NULL, want_buf);
-    MY_END_ALLOW_THREADS(self->tstate);
+    Py_END_ALLOW_THREADS
 
     return Py_BuildValue("(i,s)", rc, errmsg);
 }
@@ -688,13 +688,11 @@ stub_callback_func(LIBSSH2_SESSION *session,
     pysession->session = session;
     pysession->opened = 1;
     pysession->dealloc = 0;
-    pysession->tstate = NULL;
     Py_INCREF(pysession);
 
     pychannel = PyObject_New(PYLIBSSH2_CHANNEL, &PYLIBSSH2_Channel_Type);
     pychannel->channel = channel;
     pychannel->dealloc = 0;
-    pychannel->tstate = NULL;
     Py_INCREF(pychannel);
 
     pyabstract = Py_None;
@@ -741,9 +739,9 @@ PYLIBSSH2_Session_callback_set(PYLIBSSH2_SESSION *self, PyObject *args)
         Py_XINCREF(py_callback_func);
         py_callback_func = cb;
 
-        MY_BEGIN_ALLOW_THREADS(self->tstate);
+        Py_BEGIN_ALLOW_THREADS
         libssh2_session_callback_set(self->session, cbtype, stub_callback_func);
-        MY_END_ALLOW_THREADS(self->tstate);
+        Py_END_ALLOW_THREADS
 
         Py_INCREF(Py_None);
         result = Py_None;
@@ -774,12 +772,80 @@ PYLIBSSH2_Session_set_trace(PYLIBSSH2_SESSION *self, PyObject *args)
         return NULL;
     }
 
-    MY_BEGIN_ALLOW_THREADS(self->tstate);
+    Py_BEGIN_ALLOW_THREADS
     libssh2_trace(self->session, bitmask);
-    MY_END_ALLOW_THREADS(self->tstate);
+    Py_END_ALLOW_THREADS
 
     return Py_BuildValue("i", rc);
 }
+/* }}} */
+
+/* 
+void 
+kbd_callback(const char *name, int name_len, const char *instruction,
+             int instruction_len, int num_prompts,
+             const LIBSSH2_USERAUTH_KBDINT_PROMPT *prompts,
+             LIBSSH2_USERAUTH_KBDINT_RESPONSE *responses, void **abstract)
+static PyObject *kbd_callback_func = NULL;
+*/
+
+static char *interactive_response;
+static int interactive_response_len;
+
+static void
+stub_kbd_callback_func(const char *name, int name_len,
+                       const char *instruction, int instruction_len,
+                       int num_prompts,
+                       const LIBSSH2_USERAUTH_KBDINT_PROMPT *prompts,
+                       LIBSSH2_USERAUTH_KBDINT_RESPONSE *responses,
+                       void **abstract)
+{
+    int i;
+    (void)abstract;
+
+    for (i=0; i < num_prompts; i++) {
+        responses[i].text = strdup(interactive_response);
+        responses[i].length = interactive_response_len;
+    }
+}
+
+/* {{{ PYLIBSSH2_Session_userauth_keyboardinteractive
+ */
+static char PYLIBSSH2_Session_userauth_keyboardinteractive_doc[] = "\n\
+userauth_keyboardinteractive(username)\n\
+\n\
+Authenticate a session using a challenge-response authentication\n\
+\n\
+@param username: name of user to attempt authentication\n\
+@return 0 on success or negative on failure\n\
+@rtype ";
+
+/* {{{ PYLIBSSH2_Session_userauth_keyboardinteractive
+ */
+static PyObject *
+PYLIBSSH2_Session_userauth_keyboardinteractive(PYLIBSSH2_SESSION *self, PyObject *args)
+{
+    int rc=0;
+    char *username;
+    /*PyObject *kbd_callback;*/
+
+    if(!PyArg_ParseTuple(args, "ssi:userauth_keyboardinteractive", &username, &interactive_response, &interactive_response_len)) {
+        return NULL;
+    }
+
+    Py_BEGIN_ALLOW_THREADS
+    rc = libssh2_userauth_keyboard_interactive(self->session, username, &stub_kbd_callback_func);
+    Py_END_ALLOW_THREADS
+
+    if (rc < 0) {
+        PyErr_SetString(PYLIBSSH2_Error, "Authentication by keyboard-interactive failed.");
+        return NULL;
+    }
+
+    return Py_BuildValue("i", rc);
+    
+}
+
 /* }}} */
 
 /* {{{ PYLIBSSH2_Session_methods[]
@@ -813,6 +879,7 @@ static PyMethodDef PYLIBSSH2_Session_methods[] =
     ADD_METHOD(last_error),
     ADD_METHOD(callback_set),
     ADD_METHOD(set_trace),
+    ADD_METHOD(userauth_keyboardinteractive),
     { NULL, NULL }
 };
 #undef ADD_METHOD
@@ -835,7 +902,6 @@ PYLIBSSH2_Session_New(LIBSSH2_SESSION *session, int dealloc)
     self->dealloc = dealloc;
     self->opened = 0;
     self->socket = NULL;
-    self->tstate = NULL;
 
     libssh2_banner_set(session, LIBSSH2_SSH_DEFAULT_BANNER " Python");
 

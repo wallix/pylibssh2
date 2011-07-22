@@ -40,6 +40,9 @@ deb:
 doc:
 	epydoc --no-private -n ${PY_TARGET} -o doc ${TARGET}
 
+test: build
+	python setup.py test
+
 clean:
 	rm -rf build dist
 	rm -rf MANIFEST *.egg-info

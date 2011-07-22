@@ -19,7 +19,7 @@
 #
 __doc__ = """Python binding for libssh2 library"""
 
-__version_info__ = (1, 0, 0)
+__version_info__ = (1, 1, 0)
 __version__ = '.'.join([ str(v) for v in __version_info__])
 __url__ = 'http://github.com/wallix/pylibssh2'
 __author__ = 'Sofian Brabez'

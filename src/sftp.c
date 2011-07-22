@@ -67,9 +67,9 @@ PYLIBSSH2_Sftp_close(PYLIBSSH2_SFTP *self, PyObject *args)
         return NULL;
     }
 
-    MY_BEGIN_ALLOW_THREADS(self->tstate);
+    Py_BEGIN_ALLOW_THREADS
     rc = libssh2_sftp_close_handle(handle->sftphandle);
-    MY_END_ALLOW_THREADS(self->tstate);
+    Py_END_ALLOW_THREADS
 
     if (rc) {
         /* CLEAN: PYLIBSSH2_SFTPHANDLE_CANT_CLOSE_MSG */
@@ -100,9 +100,9 @@ PYLIBSSH2_Sftp_opendir(PYLIBSSH2_SFTP *self, PyObject *args)
         return NULL;
     }
 
-    MY_BEGIN_ALLOW_THREADS(self->tstate);
+    Py_BEGIN_ALLOW_THREADS
     handle = libssh2_sftp_opendir(self->sftp, path);
-    MY_END_ALLOW_THREADS(self->tstate);
+    Py_END_ALLOW_THREADS
 
     if (handle == NULL) {
         /* CLEAN: PYLIBSSH2_SFTPHANDLE_CANT_OPENDIR_MSG */
@@ -143,10 +143,10 @@ PYLIBSSH2_Sftp_readdir(PYLIBSSH2_SFTP *self, PyObject *args)
         return Py_None;
     }
 
-    MY_BEGIN_ALLOW_THREADS(self->tstate);
+    Py_BEGIN_ALLOW_THREADS
     buffer_maxlen = libssh2_sftp_readdir(handle->sftphandle, PyString_AsString(buffer),
                                          longentry_maxlen, &attrs);
-    MY_END_ALLOW_THREADS(self->tstate);
+    Py_END_ALLOW_THREADS
 
     if (buffer_maxlen == 0) {
         Py_INCREF(Py_None);
@@ -203,10 +203,10 @@ PYLIBSSH2_Sftp_listdir(PYLIBSSH2_SFTP *self, PyObject *args)
             return Py_None;
         }
 
-        MY_BEGIN_ALLOW_THREADS(self->tstate);
+        Py_BEGIN_ALLOW_THREADS
         buffer_maxlen = libssh2_sftp_readdir(handle->sftphandle, 
             PyString_AsString(buffer), longentry_maxlen, &attrs);
-        MY_END_ALLOW_THREADS(self->tstate);
+        Py_END_ALLOW_THREADS
 
         if (buffer_maxlen == 0) { 
             break; 
@@ -252,9 +252,9 @@ PYLIBSSH2_Sftp_open(PYLIBSSH2_SFTP *self, PyObject *args)
         return NULL;
     }
 
-    MY_BEGIN_ALLOW_THREADS(self->tstate);
+    Py_BEGIN_ALLOW_THREADS
     handle = libssh2_sftp_open(self->sftp, path, get_flags(flags), mode);
-    MY_END_ALLOW_THREADS(self->tstate);
+    Py_END_ALLOW_THREADS
 
     if (handle == NULL) {
         /* CLEAN: PYLIBSSH2_SFTP_CANT_OPEN_MSG */
@@ -320,10 +320,10 @@ PYLIBSSH2_Sftp_read(PYLIBSSH2_SFTP *self, PyObject *args)
         return Py_None;
     }
 
-    MY_BEGIN_ALLOW_THREADS(self->tstate);
+    Py_BEGIN_ALLOW_THREADS
     rc = libssh2_sftp_read(handle->sftphandle, PyString_AsString(buffer),
                            buffer_maxlen);
-    MY_END_ALLOW_THREADS(self->tstate);
+    Py_END_ALLOW_THREADS
 
     if (rc > 0) {
         if ( rc != buffer_maxlen && _PyString_Resize(&buffer, rc) < 0) {
@@ -360,9 +360,9 @@ PYLIBSSH2_Sftp_write(PYLIBSSH2_SFTP *self, PyObject *args)
         return NULL;
     }
 
-    MY_BEGIN_ALLOW_THREADS(self->tstate);
+    Py_BEGIN_ALLOW_THREADS
     rc = libssh2_sftp_write(handle->sftphandle, buffer, buffer_len);
-    MY_END_ALLOW_THREADS(self->tstate);
+    Py_END_ALLOW_THREADS
 
     if (rc < 0) {
         /* CLEAN: PYLIBSSH2_Sftp_CANT_WRITE_MSG */
@@ -416,9 +416,9 @@ PYLIBSSH2_Sftp_seek(PYLIBSSH2_SFTP *self, PyObject *args)
         return NULL;
     }
 
-    MY_BEGIN_ALLOW_THREADS(self->tstate);
+    Py_BEGIN_ALLOW_THREADS
     libssh2_sftp_seek(handle->sftphandle, offset);
-    MY_END_ALLOW_THREADS(self->tstate);
+    Py_END_ALLOW_THREADS
 
     return PyInt_FromLong(1);
 }
@@ -444,9 +444,9 @@ PYLIBSSH2_Sftp_unlink(PYLIBSSH2_SFTP *self, PyObject *args)
         return NULL;
     }
 
-    MY_BEGIN_ALLOW_THREADS(self->tstate);
+    Py_BEGIN_ALLOW_THREADS
     rc = libssh2_sftp_unlink(self->sftp, path);
-    MY_END_ALLOW_THREADS(self->tstate);
+    Py_END_ALLOW_THREADS
 
     return Py_BuildValue("i", rc);
 }
@@ -471,9 +471,9 @@ PYLIBSSH2_Sftp_rename(PYLIBSSH2_SFTP *self, PyObject *args)
         return NULL;
     }
 
-    MY_BEGIN_ALLOW_THREADS(self->tstate);
+    Py_BEGIN_ALLOW_THREADS
     rc = libssh2_sftp_rename(self->sftp, src, dst);
-    MY_END_ALLOW_THREADS(self->tstate);
+    Py_END_ALLOW_THREADS
 
     return Py_BuildValue("i", rc);
 }
@@ -499,9 +499,9 @@ PYLIBSSH2_Sftp_mkdir(PYLIBSSH2_SFTP *self, PyObject *args)
         return NULL;
     }
 
-    MY_BEGIN_ALLOW_THREADS(self->tstate);
+    Py_BEGIN_ALLOW_THREADS
     rc = libssh2_sftp_mkdir(self->sftp, path, mode);
-    MY_END_ALLOW_THREADS(self->tstate);
+    Py_END_ALLOW_THREADS
 
     return Py_BuildValue("i", rc);
 }
@@ -526,9 +526,9 @@ PYLIBSSH2_Sftp_rmdir(PYLIBSSH2_SFTP *self, PyObject *args)
         return NULL;
     }
 
-    MY_BEGIN_ALLOW_THREADS(self->tstate);
+    Py_BEGIN_ALLOW_THREADS
     rc = libssh2_sftp_rmdir(self->sftp, path);
-    MY_END_ALLOW_THREADS(self->tstate);
+    Py_END_ALLOW_THREADS
 
     return Py_BuildValue("i", rc);
 }
@@ -561,10 +561,10 @@ PYLIBSSH2_Sftp_realpath(PYLIBSSH2_SFTP *self, PyObject *args)
         return Py_None;
     }
 
-    MY_BEGIN_ALLOW_THREADS(self->tstate);
+    Py_BEGIN_ALLOW_THREADS
     rc = libssh2_sftp_symlink_ex(self->sftp, path, path_len, 
             PyString_AsString(target), target_len, type);
-    MY_END_ALLOW_THREADS(self->tstate);
+    Py_END_ALLOW_THREADS
 
     if (rc > 0) {
         if (rc != target_len && _PyString_Resize(&target, rc) < 0) {
@@ -600,9 +600,9 @@ PYLIBSSH2_Sftp_symlink(PYLIBSSH2_SFTP *self, PyObject *args)
         return NULL;
     }
 
-    MY_BEGIN_ALLOW_THREADS(self->tstate);
+    Py_BEGIN_ALLOW_THREADS
     rc = libssh2_sftp_symlink(self->sftp, path, target);
-    MY_END_ALLOW_THREADS(self->tstate);
+    Py_END_ALLOW_THREADS
 
     if (rc == -1) {
         /* CLEAN: PYLIBSSH2_SFTP_CANT_SYMLINK_MSG */
@@ -636,9 +636,9 @@ PYLIBSSH2_Sftp_get_stat(PYLIBSSH2_SFTP *self, PyObject *args)
         return NULL; 
     }
 
-    MY_BEGIN_ALLOW_THREADS(self->tstate);
+    Py_BEGIN_ALLOW_THREADS
     rc = libssh2_sftp_stat_ex(self->sftp, path, path_len, type, &attr);
-    MY_END_ALLOW_THREADS(self->tstate);
+    Py_END_ALLOW_THREADS
 
     if (rc == -1) {
         /* CLEAN: PYLIBSSH2_SFTP_CANT_GETSTAT_MSG */
@@ -701,9 +701,9 @@ PYLIBSSH2_Sftp_set_stat(PYLIBSSH2_SFTP *self, PyObject *args)
         }
     }
 
-    MY_BEGIN_ALLOW_THREADS(self->tstate);
+    Py_BEGIN_ALLOW_THREADS
     rc = libssh2_sftp_setstat(self->sftp, path, &attr);
-    MY_END_ALLOW_THREADS(self->tstate);
+    Py_END_ALLOW_THREADS
 
     if (rc == -1) {
         PyErr_SetString(PYLIBSSH2_Error, "Unable to stat.");
@@ -763,7 +763,6 @@ PYLIBSSH2_Sftp_New(LIBSSH2_SFTP *sftp, int dealloc)
 
     self->sftp = sftp;
     self->dealloc = dealloc;
-    self->tstate = NULL;
 
     return self;
 }
