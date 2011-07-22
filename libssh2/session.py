@@ -193,7 +193,7 @@ class Session(object):
         @return: dictionnary with actual method negociated
         @rtype: dict
         """
-        return self.session_methods()
+        return self._session.session_methods()
 
     def set_banner(self, banner=_libssh2.DEFAULT_BANNER):
         """
