@@ -7,11 +7,11 @@ pylibssh2
 :License: LGPL
 :Homepage: http://github.com/wallix/pylibssh2
 
-pylibssh2 1.1.0
+pylibssh2 1.0.1
 ================
 
 1.0.0 release, may 2010
-1.1.0 release, july 2011
+1.0.1 release, july 2011
 
 What
 ----
@@ -87,10 +87,10 @@ Example
 These following examples are located in examples/ directory.
 
 :scp_upload.py:
-    dummy version of scp upload file transfer with pylibssh2.
+    dummy version of scp upload file transfer.
 
 :sftp_listdir.py:
-    this example show how to use pylibssh2 to list remote directories through
+    this example show how to list remote directories through
     SFTP protocol.
 
 :ssh_exec.py:
@@ -101,8 +101,7 @@ These following examples are located in examples/ directory.
     shell.
 
 :ssh_x11.py:
-    this example demonstrate how implement a X11 forwarding client with
-    pylibssh2.
+    this example demonstrate how implement a X11 forwarding client.
 
 Documentation
 -------------

@@ -1,11 +1,14 @@
-pylibssh2 (1.1.0) unstable; urgency=low
+pylibssh2 (1.0.1) unstable; urgency=low
 
-  * Remove MY_BEGIN_ALLOW_THREAD macro and replace it with the stand PY_BEGIN_ALLOW_THREAD one
-  * Various improvement in channel handling.
-  * Add support for keyboard interactive autentication
-  * Add a test suite
+  * New upstream release
+  * src/channel.c:
+    - Replace MY_BEGIN_ALLOW_THREAD macro by PY_BEGIN_ALLOW_THREAD
+  * src/session.c, libssh2/session.py:
+    - Add support for keyboard interactive autentication
+  * tests/
+    - Add a test suite
 
- -- Olivier Hervieu <olivier.hervieu@gmail.com>  Tue, 11 Jul 2011 15:58:49 +0100
+ -- Sofian Brabez <sbz@wallix.com>  Tue, 11 Jul 2011 15:58:49 +0100
 
 pylibssh2 (1.0.0) unstable; urgency=low
 
