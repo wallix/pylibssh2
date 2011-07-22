@@ -205,6 +205,8 @@ PYLIBSSH2_Session_hostkey_hash(PYLIBSSH2_SESSION *self, PyObject *args)
 {
     int hashtype = LIBSSH2_HOSTKEY_HASH_MD5;
     const char *hash;
+    char buff[20+1];
+    size_t len;
 
     if (!PyArg_ParseTuple(args, "|i:hostkey_hash", &hashtype)) {
         return NULL;
@@ -218,6 +220,20 @@ PYLIBSSH2_Session_hostkey_hash(PYLIBSSH2_SESSION *self, PyObject *args)
         Py_INCREF(Py_None);
         return Py_None;
     }
+
+    switch (hashtype) {
+        case LIBSSH2_HOSTKEY_HASH_MD5:
+            len = 16;
+            break;
+        case LIBSSH2_HOSTKEY_HASH_SHA1:
+            len = 20;
+            break;
+        default:
+            len = 0;
+    }
+
+    memcpy(buff, hash, len);
+    buff[len] = '\0';
 
     return PyString_FromString(hash);
 }
