@@ -1,3 +1,4 @@
 include AUTHORS ChangeLog COPYING INSTALL README
 recursive-include src *.c *.h
-recursive-include examples *
+recursive-include examples *.py
+recursive-include tests *.py
