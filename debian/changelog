@@ -1,3 +1,10 @@
+pylibssh2 (1.0.2) unstable; urgency=low
+
+  * src/session.c:
+    - Add userauth_agent for ssh-agent based authentication
+
+ -- Tristan de Cacqueray <tdc@wallix.com>  Fri, 27 Apr 2012 11:11:42 +0200
+
 pylibssh2 (1.0.1) unstable; urgency=low
 
   * New upstream release

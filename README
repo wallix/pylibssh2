@@ -7,11 +7,12 @@ pylibssh2
 :License: LGPL
 :Homepage: http://github.com/wallix/pylibssh2
 
-pylibssh2 1.0.1
+pylibssh2 1.0.2
 ================
 
 1.0.0 release, may 2010
 1.0.1 release, july 2011
+1.0.2 release, apr 2012
 
 What
 ----
@@ -20,7 +21,7 @@ pylibssh2 is a python binding for libssh2 library, it was forked and rewrote
 from scratch using old org.keyphrene (http://sourceforge.net/projects/orgkeyphrene/)
 bindings.
 
-I wrote this extension at Wallix (http://wallix.com) to provide an easy
+Sofian Brabez wrote this extension at Wallix (http://wallix.com) to provide an easy
 way to manage SSH2 connection through libssh2 library in python.
 
 This is a C extension module to provide a high level python API. libssh2 API is
@@ -54,8 +55,8 @@ new and rewritten parts from Wallix.com are licensied against LGPL License too.
 Portability
 -----------
 
-I code and test this binding on Linux and FreeBSD. It would be works on all
-posix platforms but I haven't tried others.
+This is developed and tested mostly on Linux, though it should support others posix
+systesm.
 
 Bugs & Support
 ---------------
@@ -63,10 +64,6 @@ Bugs & Support
 Bug tracker is available at
 
     http://github.com/wallix/pylibssh2/issues
-
-Mailing list for support and discussions at
-
-    http://lists.wallix.org/mailman/listinfo/pylibssh2
 
 Get the source code
     

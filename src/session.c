@@ -205,8 +205,6 @@ PYLIBSSH2_Session_hostkey_hash(PYLIBSSH2_SESSION *self, PyObject *args)
 {
     int hashtype = LIBSSH2_HOSTKEY_HASH_MD5;
     const char *hash;
-    char buff[20+1];
-    size_t len;
 
     if (!PyArg_ParseTuple(args, "|i:hostkey_hash", &hashtype)) {
         return NULL;
@@ -221,21 +219,7 @@ PYLIBSSH2_Session_hostkey_hash(PYLIBSSH2_SESSION *self, PyObject *args)
         return Py_None;
     }
 
-    switch (hashtype) {
-        case LIBSSH2_HOSTKEY_HASH_MD5:
-            len = 16;
-            break;
-        case LIBSSH2_HOSTKEY_HASH_SHA1:
-            len = 20;
-            break;
-        default:
-            len = 0;
-    }
-
-    memcpy(buff, hash, len);
-    buff[len] = '\0';
-
-    return PyString_FromString(buff);
+    return PyString_FromString(hash);
 }
 /* }}} */
 
@@ -328,6 +312,92 @@ PYLIBSSH2_Session_userauth_publickey_fromfile(PYLIBSSH2_SESSION *self, PyObject 
     return Py_BuildValue("i", rc);
 }
 /* }}} */
+
+/* {{{ PYLIBSSH2_Session_userauth_agent
+ */
+static char PYLIBSSH2_Session_userauth_agent_doc[] = "\n\
+userauth_agent(username) -> int\n\
+\n\
+Authenticates a session as username using a ssh-agent\n\
+\n\
+@param  username: user to authenticate\n\
+@type   username: str\n\
+\n\
+@return 0 on success or negative on failure\n\
+@rtype  int";
+
+static PyObject *
+PYLIBSSH2_Session_userauth_agent(PYLIBSSH2_SESSION *self, PyObject *args)
+{
+    struct libssh2_agent_publickey *    identity = NULL;
+    struct libssh2_agent_publickey *    prev_identity = NULL;
+    LIBSSH2_AGENT *                     agent = NULL;
+    char *                              last_error = NULL;
+    char *                              error_message = "Something went wrong...";
+    char *                              username = NULL;
+    int                                 rc = 1;
+
+    if (!PyArg_ParseTuple(args, "s", &username)) {
+        return NULL;
+    }
+
+    Py_BEGIN_ALLOW_THREADS
+    //printf("[DEBUG] userauth_agent(): Py_BEGIN_ALLOW_THREADS\n");
+    agent = libssh2_agent_init(self->session);
+    if (!agent) {
+        error_message = "Failure initializing ssh-agent support";
+        goto shutdown;
+    }
+    //printf("[DEBUG] userauth_agent(): agent_init() OK\n");
+    if (libssh2_agent_connect(agent)) {
+        error_message = "Failure connecting to ssh-agent";
+        goto shutdown;
+    }
+    //printf("[DEBUG] userauth_agent(): agent_connect() OK\n");
+    if (libssh2_agent_list_identities(agent)) {
+        error_message = "Failure requesting identities to ssh-agent";
+        goto shutdown;
+    }
+    //printf("[DEBUG] userauth_agent(): agent_list_identities() OK\n");
+    while (1) {
+        rc = libssh2_agent_get_identity(agent, &identity, prev_identity);
+
+        if (rc == 1)
+            break;
+        if (rc < 0) {
+            error_message = "Failure obtaining identity from ssh-agent support";
+            goto shutdown;
+        }
+        //printf("[DEBUG] userauth_agent(): agent_get_identity() OK\n");
+        if (!libssh2_agent_userauth(agent, username, identity)) {
+            // Authentication succeed!
+            break;
+        }
+        error_message = "\tAuthentication with public key failed!\n";
+        prev_identity = identity;
+    }
+shutdown:
+    //printf("[DEBUG] userauth_agent(): shutdown...\n");
+    if (agent) {
+        libssh2_agent_disconnect(agent);
+        libssh2_agent_free(agent);
+    }
+
+    Py_END_ALLOW_THREADS
+    //printf("[DEBUG] userauth_agent(): Py_END_ALLOW_THREADS\n");
+
+    if (rc) {
+        libssh2_session_last_error(self->session, &last_error, NULL, 0);
+        PyErr_Format(PYLIBSSH2_Error, "Authentification by public key failed: %s (%s)",
+            error_message,
+            last_error);
+        return NULL;
+    }
+
+    return Py_BuildValue("i", rc);
+}
+/* }}} */
+
 
 /* {{{ PYLIBSSH2_Session_session_methods
  */
@@ -896,6 +966,7 @@ static PyMethodDef PYLIBSSH2_Session_methods[] =
     ADD_METHOD(callback_set),
     ADD_METHOD(set_trace),
     ADD_METHOD(userauth_keyboardinteractive),
+    ADD_METHOD(userauth_agent),
     { NULL, NULL }
 };
 #undef ADD_METHOD

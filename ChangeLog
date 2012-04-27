@@ -1,3 +1,7 @@
+2012-04-27  Tristan de Cacqueray <tdc@wallix.com>
+	
+  * src/session.c:
+    - Add userauth_agent for ssh-agent based authentication
 
 2011-07-22  Sofian Brabez <sbz@wallix.com>
 	

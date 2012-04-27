@@ -302,3 +302,15 @@ class Session(object):
         """
         return self._session.userauth_keyboardinteractive(username, password,
                                                    len(password))
+
+    def userauth_agent(self, username):
+        """
+        Authenticates a session with a ssh-agent.
+
+        @param username: user to authenticate
+        @type username: str
+
+        @return: 0 on success or negative on failure
+        @rtype: int
+        """
+        return self._session.userauth_agent(username)

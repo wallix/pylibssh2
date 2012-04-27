@@ -63,6 +63,7 @@ userauth_list() -- lists the authentification methods\n\
 userauth_password() -- authenticates a session with credentials\n\
 userauth_publickey() -- authenticates a session with a publickey\n\
 userauth_publickey_fromfile() -- authenticates a session with publickey\n\
+userauth_agent() -- authenticates a session with a ssh-agent\n\
 ");
 
 static PyObject *
