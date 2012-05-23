@@ -373,7 +373,7 @@ PYLIBSSH2_Session_userauth_agent(PYLIBSSH2_SESSION *self, PyObject *args)
             // Authentication succeed!
             break;
         }
-        error_message = "\tAuthentication with public key failed!\n";
+        error_message = "No authorized key found in ssh-agent!";
         prev_identity = identity;
     }
 shutdown:
