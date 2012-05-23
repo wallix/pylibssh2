@@ -33,7 +33,7 @@ Closes the active channel.\n\
 @param channel\n\
 @type libssh2.Channel\n\
 \n\
-@return 0 on success or negative on failure\n\
+@return 0 on success or LIBSSH2_ERROR_EAGAIN if it would block (non blocking mode)\n\
 @rtype int";
 
 static PyObject *
@@ -43,12 +43,13 @@ PYLIBSSH2_Channel_close(PYLIBSSH2_CHANNEL *self, PyObject *args)
 
     Py_BEGIN_ALLOW_THREADS
     rc = libssh2_channel_close(self->channel);
-    rc = libssh2_channel_wait_closed(self->channel);
+    if (rc != LIBSSH2_ERROR_EAGAIN)
+        rc = libssh2_channel_wait_closed(self->channel);
     Py_END_ALLOW_THREADS
 
-    if (rc) {
+    if (rc && rc != LIBSSH2_ERROR_EAGAIN) {
         /* CLEAN: PYLIBSSH2_CHANNEL_CANT_CLOSE_MSG */
-        PyErr_SetString(PYLIBSSH2_Error, "Unable to close the channel.");
+        PyErr_Format(PYLIBSSH2_Error, "Unable to close the channel (error %d).", rc);
         return NULL; 
     }
 
@@ -66,7 +67,8 @@ Requests a pty with term type on a channel.\n\
 @param  term: terminal emulation type (vt100, ansi, etc...)\n\
 @type   term: str\n\
 \n\
-@return 0 on succes or negative on failure\n\
+@return 0 on succes or negative on failure or if it would block\n\
+@return 0 on success or LIBSSH2_ERROR_EAGAIN if it would block (non blocking mode)\n\
 @rtype  int";
 
 /*
@@ -99,9 +101,9 @@ PYLIBSSH2_Channel_pty(PYLIBSSH2_CHANNEL *self, PyObject *args)
                                         width, height, width_px, height_px);
     Py_END_ALLOW_THREADS
 
-    if (rc) {
+    if (rc && rc != LIBSSH2_ERROR_EAGAIN) {
         /* CLEAN: PYLIBSSH2_CHANNEL_PTY_FAILED_MSG */ 
-        PyErr_SetString(PYLIBSSH2_Error, "Failed to request pty.");
+        PyErr_Format(PYLIBSSH2_Error, "Failed to request pty (error %d).", rc);
         return NULL;
     }
 
@@ -125,7 +127,7 @@ Requests a pty resize on a channel with the given width and height.\n\
 @param  height_px: terminal height in pixel (opt)\n\
 @type   height: int\n\
 \n\
-@return 0 on success or negative on failure\n\
+@return 0 on success or LIBSSH2_ERROR_EAGAIN if it would block (non blocking mode)\n\
 @rtype  int";
 
 /*
@@ -154,8 +156,8 @@ PYLIBSSH2_Channel_pty_resize(PYLIBSSH2_CHANNEL *self, PyObject *args)
                                                 width_px, height_px);
     Py_END_ALLOW_THREADS
 
-    if (rc) {
-        PyErr_SetString(PYLIBSSH2_Error, "Failed to resize pty");
+    if (rc && rc != LIBSSH2_ERROR_EAGAIN) {
+        PyErr_Format(PYLIBSSH2_Error, "Failed to resize pty (error %d).", rc);
         return NULL;
     }
 
@@ -170,7 +172,7 @@ shell() -> int\n\
 \n\
 Requests a shell on the channel.\n\
 \n\
-@return 0 on success or negative on failure\n\
+@return 0 on success or LIBSSH2_ERROR_EAGAIN if it would block (non blocking mode)\n\
 @rtype  int";
 
 static PyObject *
@@ -182,9 +184,9 @@ PYLIBSSH2_Channel_shell(PYLIBSSH2_CHANNEL *self, PyObject *args)
     rc = libssh2_channel_shell(self->channel);
     Py_END_ALLOW_THREADS
 
-    if (rc) {
+    if (rc && rc != LIBSSH2_ERROR_EAGAIN) {
         /* CLEAN: PYLIBSSH2_CHANNEL_CANT_REQUEST_SHELL_MSG */
-        PyErr_SetString(PYLIBSSH2_Error,"Unable to request shell on allocated pty.");
+        PyErr_Format(PYLIBSSH2_Error, "Unable to request shell on allocated pty (error %d).", rc);
         return NULL;
     }
 
@@ -202,7 +204,7 @@ Executes command on the channel.\n\
 @param  command: message data\n\
 @type   command: str\n\
 \n\
-@return 0 on success or negative on failure\n\
+@return 0 on success or LIBSSH2_ERROR_EAGAIN if it would block (non blocking mode)\n\
 @rtype  int";
 
 static PyObject *
@@ -219,9 +221,9 @@ PYLIBSSH2_Channel_execute(PYLIBSSH2_CHANNEL *self, PyObject *args)
     rc = libssh2_channel_exec(self->channel, command);
     Py_END_ALLOW_THREADS
 
-    if (rc) {
+    if (rc && rc != LIBSSH2_ERROR_EAGAIN) {
         /* CLEAN: PYLIBSSH2_CANT_REQUEST_EXEC_COMMAND_MSG */
-        PyErr_SetString(PYLIBSSH2_Error, "Unable to request exec command.");
+        PyErr_Format(PYLIBSSH2_Error, "Unable to request exec command (error %d).", rc);
         return NULL;
     }
 
@@ -241,7 +243,7 @@ Sets envrionment variable on the channel.\n\
 @param value: evironment variable value\n\
 @type  value: str\n\
 \n\
-@return 0 on success or negative on failure\n\
+@return 0 on success or negative on failure (LIBSSH2_ERROR_EAGAIN if it would block)\n\
 @rtype  int";
 
 static PyObject *
@@ -306,8 +308,10 @@ Reads size bytes on the channel.\n\
 @param size: size of the buffer storage\n\
 @type  size: int\n\
 \n\
-@return bytes read or negative on failure\n\
-@rtype  str";
+@return string containing bytes read or negative value on failure\n\
+        LIBSSH2_ERROR_EAGAIN if it would block\n\
+        None if EOF is encoutered\n\
+@rtype  str or int or none";
 
 static PyObject *
 PYLIBSSH2_Channel_read(PYLIBSSH2_CHANNEL *self, PyObject *args)
@@ -335,6 +339,10 @@ PYLIBSSH2_Channel_read(PYLIBSSH2_CHANNEL *self, PyObject *args)
             if (rc != buffer_size && _PyString_Resize(&buffer, rc) < 0)
                 return NULL;
             return buffer;
+        }
+        else if (rc == LIBSSH2_ERROR_EAGAIN) {
+            Py_XDECREF(buffer);
+            return Py_BuildValue("i", rc);
         }
     }
 

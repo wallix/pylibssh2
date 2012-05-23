@@ -46,7 +46,8 @@ class Channel(object):
         """
         Closes the active channel.
 
-        @return: 0 on success or negative on failure
+        @return: 0 on success,
+                 LIBSSH2_ERROR_EAGAIN if it would block (non blocking mode)
         @rtype: int
         """
         self.closed = True
@@ -56,7 +57,9 @@ class Channel(object):
         """
         Wait for remote channel to ack closing.
 
-        @return: 0 on success or negative on failure
+        @return: 0 on success,
+                 LIBSSH2_ERROR_EAGAIN if it would block (non blocking mode),
+                 a negative value on failure
         @rtype: int
         """
         self.closed = True
@@ -78,7 +81,8 @@ class Channel(object):
         @param command: message data
         @type command: str
 
-        @return: 0 on success or negative on failure
+        @return: 0 on success,
+                 LIBSSH2_ERROR_EAGAIN if it would block (non blocking mode)
         @rtype: int
         """
         self.closed = True
@@ -140,7 +144,8 @@ class Channel(object):
         @param pixelheight: terminal height in pixels
         @type pixelheight: int
 
-        @return: 0 on success or negative on failure
+        @return: 0 on success,
+                 LIBSSH2_ERROR_EAGAIN if it would block (non blocking mode)
         @rtype: int
         """
         return self._channel.pty_resize(width, height, pixelwidth, pixelheight)
@@ -152,8 +157,10 @@ class Channel(object):
         @param size: size of the buffer storage
         @type size: int
 
-        @return: bytes readed or negative on failure
-        @rtype: str
+        @return: bytes readed,
+                 LIBSSH2_ERROR_EAGAIN if it would block (non blocking mode),
+                 None if EOF is encoutered
+        @rtype: str or int or none
         """
         return self._channel.read(size)
 
