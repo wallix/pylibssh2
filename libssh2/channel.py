@@ -164,6 +164,20 @@ class Channel(object):
         """
         return self._channel.read(size)
 
+    def read_stderr(self, size=1024):
+        """
+        Reads size bytes on the channel stderr.
+
+        @param size: size of the buffer storage
+        @type size: int
+
+        @return: bytes readed,
+                 LIBSSH2_ERROR_EAGAIN if it would block (non blocking mode),
+                 None if EOF is encoutered
+        @rtype: str or int or none
+        """
+        return self._channel.read_stderr(size)
+
     def read_ex(self, size=1024, stream_id=0):
         """
         Reads size bytes on the channel with given stream_id.
