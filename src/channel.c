@@ -353,6 +353,61 @@ PYLIBSSH2_Channel_read(PYLIBSSH2_CHANNEL *self, PyObject *args)
 }
 /* }}} */
 
+/* {{{ PYLIBSSH2_Channel_read_stderr
+ */
+static char PYLIBSSH2_Channel_read_stderr_doc[] = "\n\
+read_stderr(size) -> str\n\
+\n\
+Reads size bytes on the channel stderr.\n\
+\n\
+@param size: size of the buffer storage\n\
+@type  size: int\n\
+\n\
+@return string containing bytes read or negative value on failure\n\
+        LIBSSH2_ERROR_EAGAIN if it would block\n\
+        None if EOF is encoutered\n\
+@rtype  str or int or none";
+
+static PyObject *
+PYLIBSSH2_Channel_read_stderr(PYLIBSSH2_CHANNEL *self, PyObject *args)
+{
+    int rc;
+    int buffer_size;
+    /* buffer to read as a python object */
+    PyObject *buffer;
+
+    if (!PyArg_ParseTuple(args, "i|i:read_stderr", &buffer_size))
+        return NULL;
+
+    buffer = PyString_FromStringAndSize(NULL, buffer_size);
+    if (buffer == NULL) {
+        return NULL;
+    }
+
+    if (libssh2_channel_eof(self->channel) != 1) {
+        Py_BEGIN_ALLOW_THREADS
+        rc = libssh2_channel_read_stderr(self->channel, PyString_AsString(buffer),
+                                  buffer_size);
+        Py_END_ALLOW_THREADS
+
+        if (rc > 0) {
+            if (rc != buffer_size && _PyString_Resize(&buffer, rc) < 0)
+                return NULL;
+            return buffer;
+        }
+        else if (rc == LIBSSH2_ERROR_EAGAIN) {
+            Py_XDECREF(buffer);
+            return Py_BuildValue("i", rc);
+        }
+    }
+
+    Py_XDECREF(buffer);
+    Py_INCREF(Py_None);
+
+    return Py_None;
+}
+/* }}} */
+
 /* {{{ PYLIBSSH2_Channel_read_ex
  */
 static char PYLIBSSH2_Channel_read_ex_doc[] = "\n\
@@ -701,6 +756,7 @@ static PyMethodDef PYLIBSSH2_Channel_methods[] =
     ADD_METHOD(setblocking),
     ADD_METHOD(read_ex),
     ADD_METHOD(read),
+    ADD_METHOD(read_stderr),
     ADD_METHOD(write),
     ADD_METHOD(flush),
     ADD_METHOD(eof),
