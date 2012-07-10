@@ -1,3 +1,17 @@
+pylibssh2 (1.0.3) unstable; urgency=low
+
+  * src/channel.c, libssh2/channel.py:
+    - Add support for non blocking mode
+    - Add read_stderr binding
+  * src/session.c, libssh2/session.py:
+    - Add support for non blocking mode
+    - Add setblocking, getblocking, blockdirections binding
+  * examples/ssh_exec2.py:
+    - Add example to demonstrate non blocking capabilities.
+  * Thanks goes to Morian, cvss and aaloksood
+
+ -- Tristan de Cacqueray <tdc@wallix.com>  Tue, 10 Jul 2012 11:51:42 +0200
+
 pylibssh2 (1.0.2) unstable; urgency=low
 
   * src/session.c:
