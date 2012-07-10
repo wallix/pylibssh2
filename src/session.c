@@ -52,6 +52,79 @@ PYLIBSSH2_Session_set_banner(PYLIBSSH2_SESSION *self, PyObject *args)
 }
 /* }}} */
 
+/* {{{ PYLIBSSH2_Session_setblocking
+ */
+static char PYLIBSSH2_Session_setblocking_doc[] = "\
+setblocking(mode) -> None\n\
+\n\
+Sets blocking mode on session to 0 or 1.\n\
+\n\
+@param  mode\n\
+@type   int\n\
+\n\
+@return None";
+
+static PyObject *
+PYLIBSSH2_Session_setblocking(PYLIBSSH2_SESSION *self, PyObject *args)
+{
+    int mode;
+
+    if (!PyArg_ParseTuple(args, "i", &mode)) {
+        return NULL;
+    }
+
+    libssh2_session_set_blocking(self->session, mode);
+    
+    return Py_BuildValue("");
+}
+/* }}} */
+
+/* {{{ PYLIBSSH2_Session_getblocking
+ */
+static char PYLIBSSH2_Session_getblocking_doc[] = "\
+getblocking(mode) -> None\n\
+\n\
+Sets blocking mode on session to 0 or 1.\n\
+\n\
+@return mode\n\
+@type int";
+
+static PyObject *
+PYLIBSSH2_Session_getblocking(PYLIBSSH2_SESSION *self, PyObject *args)
+{
+    int mode;
+
+    mode = libssh2_session_get_blocking(self->session);
+    
+    return Py_BuildValue("i", mode);
+}
+/* }}} */
+
+
+/* {{{ PYLIBSSH2_Session_blockdirections
+ */
+static char PYLIBSSH2_Session_blockdirections_doc[] = "\
+blockdirections() -> blockedon\n\
+\n\
+Returns directions on which session is waiting\n\
+\n\
+\n\
+@return block directions\n\
+@rtype int";
+
+static PyObject *
+PYLIBSSH2_Session_blockdirections(PYLIBSSH2_SESSION *self, PyObject *args)
+{
+    int blockedon;
+
+    blockedon = libssh2_session_block_directions(self->session);
+    
+    return Py_BuildValue("i", blockedon);
+}
+/* }}} */
+
+
+
 /* {{{ PYLIBSSH2_Session_startup
  */
 static char PYLIBSSH2_Session_startup_doc[] = "\
@@ -81,17 +154,19 @@ PYLIBSSH2_Session_startup(PYLIBSSH2_SESSION *self, PyObject *args)
     self->socket = socket;
     fd = PyObject_AsFileDescriptor(socket);
     Py_BEGIN_ALLOW_THREADS
-    rc = libssh2_session_startup(self->session, fd);
+    rc = libssh2_session_handshake(self->session, fd);
     Py_END_ALLOW_THREADS
 
-    if (rc) {
+    if (rc < 0 && rc != LIBSSH2_ERROR_EAGAIN) {
         libssh2_session_last_error(self->session, &last_error, NULL, 0);
         /* CLEAN: PYLIBSSH2_SESSION_STARTUP_MSG */
         PyErr_Format(PYLIBSSH2_Error, "SSH startup: %s", last_error);
         return NULL;
     }
     
-    self->opened = 1;
+    if (rc == 0) {
+      self->opened = 1;
+    }
 
     return Py_BuildValue("i", rc);
 }
@@ -124,13 +199,15 @@ PYLIBSSH2_Session_close(PYLIBSSH2_SESSION *self, PyObject *args)
     rc = libssh2_session_disconnect(self->session, reason);
     Py_END_ALLOW_THREADS
 
-    if (rc) {
+    if (rc < 0 && rc != LIBSSH2_ERROR_EAGAIN) {
         /* CLEAN: PYLIBSSH2_SESSION_CLOSE_MSG */
         PyErr_SetString(PYLIBSSH2_Error, "SSH close error.");
         return NULL;
     }
 
-    self->opened = 0;
+    if (rc == 0) {
+      self->opened = 0;
+    }
 
     return Py_BuildValue("i", rc);
 }
@@ -249,10 +326,10 @@ PYLIBSSH2_Session_userauth_password(PYLIBSSH2_SESSION *self, PyObject *args)
         return NULL;
 
     Py_BEGIN_ALLOW_THREADS
-    rc = libssh2_userauth_password(self->session, username, password);
+    rc = libssh2_userauth_password_ex(self->session, username, strlen(username), password, strlen(password), NULL);
     Py_END_ALLOW_THREADS
 
-    if (rc < 0) {
+    if (rc < 0 && rc != LIBSSH2_ERROR_EAGAIN) {
         /* CLEAN: PYLIBSSH2_SESSION_USERAUTH_PASSWORD_FAILED_MSG */
         PyErr_SetString(PYLIBSSH2_Error, "Authentification by password failed.");
         return NULL;
@@ -302,7 +379,7 @@ PYLIBSSH2_Session_userauth_publickey_fromfile(PYLIBSSH2_SESSION *self, PyObject 
                                              privatekey, passphrase);
     Py_END_ALLOW_THREADS
 
-    if (rc) {
+    if (rc < 0 && rc != LIBSSH2_ERROR_EAGAIN) {
         libssh2_session_last_error(self->session, &last_error, NULL, 0);
         PyErr_Format(PYLIBSSH2_Error, "Authentification by public key failed: %s",
                      last_error);
@@ -499,13 +576,27 @@ static PyObject *
 PYLIBSSH2_Session_open_session(PYLIBSSH2_SESSION *self, PyObject *args)
 {
     int dealloc = 1;
+    LIBSSH2_CHANNEL *channel;
 
     if (!PyArg_ParseTuple(args, "|i:open_session", &dealloc)) {
         return NULL;
     }
 
-    return (PyObject *)PYLIBSSH2_Channel_New(libssh2_channel_open_session(self->session),
-                                        dealloc);
+    channel = libssh2_channel_open_session(self->session);
+    
+    if (channel== NULL){
+      if (libssh2_session_last_error(self->session,NULL,NULL,0) ==
+	  LIBSSH2_ERROR_EAGAIN){
+	return Py_BuildValue("");
+	}
+      else{
+	PyErr_SetString(PYLIBSSH2_Error, "Failed to open channel");
+	return NULL;
+      }
+    }
+    else {
+      return (PyObject *)PYLIBSSH2_Channel_New(channel, dealloc);
+    }
 }
 /* }}} */
 
@@ -923,7 +1014,7 @@ PYLIBSSH2_Session_userauth_keyboardinteractive(PYLIBSSH2_SESSION *self, PyObject
     rc = libssh2_userauth_keyboard_interactive(self->session, username, &stub_kbd_callback_func);
     Py_END_ALLOW_THREADS
 
-    if (rc < 0) {
+    if (rc < 0 && rc != LIBSSH2_ERROR_EAGAIN) {
         PyErr_SetString(PYLIBSSH2_Error, "Authentication by keyboard-interactive failed.");
         return NULL;
     }
@@ -947,6 +1038,9 @@ PYLIBSSH2_Session_userauth_keyboardinteractive(PYLIBSSH2_SESSION *self, PyObject
 static PyMethodDef PYLIBSSH2_Session_methods[] =
 {
     ADD_METHOD(set_banner),
+    ADD_METHOD(setblocking),
+    ADD_METHOD(getblocking),
+    ADD_METHOD(blockdirections),
     ADD_METHOD(startup),
     ADD_METHOD(close),
     ADD_METHOD(userauth_authenticated),

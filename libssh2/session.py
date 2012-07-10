@@ -130,8 +130,8 @@ class Session(object):
         @return: new channel opened
         @rtype: L{Channel}
         """
-        return Channel(self._session.open_session())
-
+        ret = self._session.open_session()
+        return Channel(ret) if ret else None
 
     def set_trace(self, bitmask):
         """
@@ -206,7 +206,7 @@ class Session(object):
         @return: 0 on success or negative on failure
         @rtype: int
         """
-        self._session.set_banner(banner)
+        return self._session.set_banner(banner)
 
     def sftp_init(self):
         """
@@ -216,6 +216,36 @@ class Session(object):
         @rtype: L{Sftp}
         """
         raise NotImplementedError()
+
+    def setblocking(self, mode=1):
+        """
+        Sets blocking mode on the session. Default mode is blocking.
+
+        @param mode: blocking (1) or non blocking (0) mode
+
+        @return: None
+        """
+        return self._session.setblocking(mode)
+
+    def getblocking(self):
+        """
+        Gets blocking mode on the session.
+
+        @return : blocking (1) or non blocking (0) mode
+        @type: int
+        """
+        return self._session.getblocking()
+
+    def blockdirections(self):
+        """
+        Gets blocking mode on the session.
+
+        @return : block directions 
+        @type: int
+        @values: LIBSSH2_SESSION_BLOCK_INBOUND: Inbound direction blocked.
+                 LIBSSH2_SESSION_BLOCK_OUTBOUND: Outbound direction blocked.
+        """
+        return self._session.blockdirections()
 
     def startup(self, sock):
         """
@@ -227,7 +257,7 @@ class Session(object):
         @return: 0 on success or negative on failure
         @rtype: int
         """
-        self._session.startup(sock)
+        return self._session.startup(sock)
 
     def userauth_authenticated(self):
         """
