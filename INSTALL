@@ -16,7 +16,7 @@ Here is the list of prerequisite software to run pylibssh2. The versions are
 the ones I develop with. It may work with earlier versions, but I can't
 guaranty anything.
 
-* `libssh2 <http://www.libssh2.org>`_ 1.2.1+
+* `libssh2 <http://www.libssh2.org>`_ 1.2.8+
 * `python <http://python.org/>`_ 2.6+
 
 Install the software
