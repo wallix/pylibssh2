@@ -77,7 +77,7 @@ class MySSHClient:
 
             # loop
             while True:
-                data_to_disp = channel.poll(0, 1)
+                data_to_disp = channel.poll_read(1)
                 if data_to_disp > 0:
                     data = channel.read(1024)
                     if data is not None:
