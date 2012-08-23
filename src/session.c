@@ -369,7 +369,7 @@ PYLIBSSH2_Session_userauth_publickey_fromfile(PYLIBSSH2_SESSION *self, PyObject 
     char *passphrase;
     char *last_error;
 
-    if (!PyArg_ParseTuple(args, "sss|s:userauth_publickey_fromfile", &username,
+    if (!PyArg_ParseTuple(args, "szs|z:userauth_publickey_fromfile", &username,
                           &publickey, &privatekey, &passphrase)) {
         return NULL;
     }
