@@ -151,7 +151,7 @@ class Session(object):
         @type interval: int
         @param bitmask: bitmask on libssh2.LIBSSH2_TRACE_* constant
         """
-        self._session.keepalive_config(want_reply, interval)
+        self._session.keepalive_config(wantReply, interval)
     
     def keepalive_send(self):
         """
