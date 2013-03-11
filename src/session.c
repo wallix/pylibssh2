@@ -957,6 +957,62 @@ PYLIBSSH2_Session_set_trace(PYLIBSSH2_SESSION *self, PyObject *args)
 }
 /* }}} */
 
+/* PYLIBSSH2_Session_keepalive_config
+ */
+static char PYLIBSSH2_Session_keepalive_config_doc[] = "\n\
+keepalive_config(want_reply, interval)\n\
+\n\
+Configures how often keepalives are sent.\n\
+\n\
+@param  want_reply: keepalives request response from server\n\
+@type   want_reply: bool\n\
+@param  interval: time between keepalives (0 to disable)\n\
+@type   interval: int\n\
+\n\
+@return\n\
+@rtype ";
+
+static PyObject *
+PYLIBSSH2_Session_keepalive_config(PYLIBSSH2_SESSION *self, PyObject *args)
+{
+    int rc=0;
+    int want_reply, interval;
+
+    if (!PyArg_ParseTuple(args, "ii:keepalive_config", &want_reply, &interval)) {
+        return NULL;
+    }
+
+    Py_BEGIN_ALLOW_THREADS
+    libssh2_keepalive_config(self->session, want_reply, interval);
+    Py_END_ALLOW_THREADS
+
+    return Py_BuildValue("i", rc);
+}
+/* }}} */
+
+/* PYLIBSSH2_Session_keepalive_send
+ */
+static char PYLIBSSH2_Session_keepalive_send_doc[] = "\n\
+keepalive_send()\n\
+\n\
+Send keepalives if due when using non-blocking I/O.\n\
+\n\
+@return seconds until next keepalive\n\
+@rtype  int";
+
+static PyObject *
+PYLIBSSH2_Session_keepalive_send(PYLIBSSH2_SESSION *self, PyObject *args)
+{
+    int rc=0;
+
+    Py_BEGIN_ALLOW_THREADS
+    libssh2_keepalive_send(self->session, &rc);
+    Py_END_ALLOW_THREADS
+
+    return Py_BuildValue("i", rc);
+}
+/* }}} */
+
 /* 
 void 
 kbd_callback(const char *name, int name_len, const char *instruction,
@@ -1059,6 +1115,8 @@ static PyMethodDef PYLIBSSH2_Session_methods[] =
     ADD_METHOD(last_error),
     ADD_METHOD(callback_set),
     ADD_METHOD(set_trace),
+    ADD_METHOD(keepalive_config),
+    ADD_METHOD(keepalive_send),
     ADD_METHOD(userauth_keyboardinteractive),
     ADD_METHOD(userauth_agent),
     { NULL, NULL }

@@ -141,6 +141,26 @@ class Session(object):
         """
         self._session.set_trace(bitmask)
 
+    def keepalive_config(self, wantReply, interval):
+        """
+        Set how often to send keepalives.
+
+        @param wantReply: Whether to request the server sends responses to keepalives
+        @type wantReply: bool
+        @param interval: How often to send keepalives (0 to disable)
+        @type interval: int
+        @param bitmask: bitmask on libssh2.LIBSSH2_TRACE_* constant
+        """
+        self._session.keepalive_config(wantReply, interval)
+    
+    def keepalive_send(self):
+        """
+        Sends keepalive, if due. Call this to send keepalives from non-blocking code.
+
+        @return: seconds until next keepalive
+        @rtype: int
+        """
+        return self._session.keepalive_send()
 
     def scp_recv(self, remote_path):
         """
