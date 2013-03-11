@@ -187,10 +187,10 @@ class Session(object):
 
     def session_methods(self):
         """
-        Returns dictionnary with the current actives algorithms.
+        Returns dictionary with the current actives algorithms.
         CS keys is Client to Server and SC keys is Server to Client.
 
-        @return: dictionnary with actual method negociated
+        @return: dictionary with actual method negotiated
         @rtype: dict
         """
         return self._session.session_methods()
@@ -261,7 +261,7 @@ class Session(object):
 
     def userauth_authenticated(self):
         """
-        Returns authentification status for the given session.
+        Returns authentication status for the given session.
 
         @return: non-zero if authenticated or 0 if not
         @rtype: int
@@ -270,7 +270,7 @@ class Session(object):
 
     def userauth_list(self, username):
         """
-        Lists the authentification methods supported by a server.
+        Lists the authentication methods supported by a server.
 
         @param username: username which will be used while authenticating
         @type username: str
