@@ -43,7 +43,7 @@ PYLIBSSH2_Channel_close(PYLIBSSH2_CHANNEL *self, PyObject *args)
 
     Py_BEGIN_ALLOW_THREADS
     rc = libssh2_channel_close(self->channel);
-    if (rc != LIBSSH2_ERROR_EAGAIN)
+    if (rc && rc != LIBSSH2_ERROR_EAGAIN)
         rc = libssh2_channel_wait_closed(self->channel);
     Py_END_ALLOW_THREADS
 
