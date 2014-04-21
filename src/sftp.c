@@ -137,14 +137,14 @@ PYLIBSSH2_Sftp_readdir(PYLIBSSH2_SFTP *self, PyObject *args)
         return NULL;
     }
 
-    buffer = PyUnicode_FromStringAndSize(NULL, longentry_maxlen);
+    buffer = PyBytes_FromStringAndSize(NULL, longentry_maxlen);
     if (buffer == NULL) {
         Py_INCREF(Py_None);
         return Py_None;
     }
 
     Py_BEGIN_ALLOW_THREADS
-    buffer_maxlen = libssh2_sftp_readdir(handle->sftphandle, _PyUnicode_AsString(buffer),
+    buffer_maxlen = libssh2_sftp_readdir(handle->sftphandle, PyBytes_AsString(buffer),
                                          longentry_maxlen, &attrs);
     Py_END_ALLOW_THREADS
 
@@ -158,7 +158,7 @@ PYLIBSSH2_Sftp_readdir(PYLIBSSH2_SFTP *self, PyObject *args)
     }
 
     if (buffer_maxlen != longentry_maxlen && 
-        PyUnicode_Resize(&buffer, buffer_maxlen) < 0) {
+        _PyBytes_Resize(&buffer, buffer_maxlen) < 0) {
         Py_INCREF(Py_None);
         return Py_None;
     }
@@ -197,7 +197,7 @@ PYLIBSSH2_Sftp_listdir(PYLIBSSH2_SFTP *self, PyObject *args)
 
     all = PyList_New(0);
     while (1) {
-        buffer = PyUnicode_FromStringAndSize(NULL, longentry_maxlen);
+        buffer = PyBytes_FromStringAndSize(NULL, longentry_maxlen);
         if (buffer == NULL) {
             Py_INCREF(Py_None);
             return Py_None;
@@ -205,7 +205,7 @@ PYLIBSSH2_Sftp_listdir(PYLIBSSH2_SFTP *self, PyObject *args)
 
         Py_BEGIN_ALLOW_THREADS
         buffer_maxlen = libssh2_sftp_readdir(handle->sftphandle, 
-            _PyUnicode_AsString(buffer), longentry_maxlen, &attrs);
+            PyBytes_AsString(buffer), longentry_maxlen, &attrs);
         Py_END_ALLOW_THREADS
 
         if (buffer_maxlen == 0) { 
@@ -216,7 +216,7 @@ PYLIBSSH2_Sftp_listdir(PYLIBSSH2_SFTP *self, PyObject *args)
         }
 
         if ( buffer_maxlen != longentry_maxlen && 
-             PyUnicode_Resize(&buffer, buffer_maxlen) < 0) {
+             _PyBytes_Resize(&buffer, buffer_maxlen) < 0) {
             Py_INCREF(Py_None);
             return Py_None;
         }
@@ -314,19 +314,19 @@ PYLIBSSH2_Sftp_read(PYLIBSSH2_SFTP *self, PyObject *args)
         return NULL;
     }
 
-    buffer = PyUnicode_FromStringAndSize(NULL, buffer_maxlen);
+    buffer = PyBytes_FromStringAndSize(NULL, buffer_maxlen);
     if (buffer == NULL) {
         Py_INCREF(Py_None);
         return Py_None;
     }
 
     Py_BEGIN_ALLOW_THREADS
-    rc = libssh2_sftp_read(handle->sftphandle, _PyUnicode_AsString(buffer),
+    rc = libssh2_sftp_read(handle->sftphandle, PyBytes_AsString(buffer),
                            buffer_maxlen);
     Py_END_ALLOW_THREADS
 
     if (rc > 0) {
-        if ( rc != buffer_maxlen && PyUnicode_Resize(&buffer, rc) < 0) {
+        if ( rc != buffer_maxlen && _PyBytes_Resize(&buffer, rc) < 0) {
             Py_INCREF(Py_None);
             return Py_None;
         }
@@ -393,11 +393,7 @@ PYLIBSSH2_Sftp_tell(PYLIBSSH2_SFTP *self, PyObject *args)
         return NULL;
     }
 
-#if PY_MAJOR_VERSION >= 3
     return PyLong_FromLong(libssh2_sftp_tell(handle->sftphandle));
-#else
-    return PyInt_FromLong(libssh2_sftp_tell(handle->sftphandle));
-#endif
 }
 /* }}} */
 
@@ -424,11 +420,7 @@ PYLIBSSH2_Sftp_seek(PYLIBSSH2_SFTP *self, PyObject *args)
     libssh2_sftp_seek(handle->sftphandle, offset);
     Py_END_ALLOW_THREADS
 
-#if PY_MAJOR_VERSION >= 3
     return PyLong_FromLong(1);
-#else
-    return PyInt_FromLong(1);
-#endif
 }
 /* }}} */
 
@@ -563,7 +555,7 @@ PYLIBSSH2_Sftp_realpath(PYLIBSSH2_SFTP *self, PyObject *args)
         return NULL;
     }
 
-    target = PyUnicode_FromStringAndSize(NULL, target_len);
+    target = PyBytes_FromStringAndSize(NULL, target_len);
     if (target == NULL) {
         Py_INCREF(Py_None);
         return Py_None;
@@ -571,11 +563,11 @@ PYLIBSSH2_Sftp_realpath(PYLIBSSH2_SFTP *self, PyObject *args)
 
     Py_BEGIN_ALLOW_THREADS
     rc = libssh2_sftp_symlink_ex(self->sftp, path, path_len, 
-            _PyUnicode_AsString(target), target_len, type);
+            PyBytes_AsString(target), target_len, type);
     Py_END_ALLOW_THREADS
 
     if (rc > 0) {
-        if (rc != target_len && PyUnicode_Resize(&target, rc) < 0) {
+        if (rc != target_len && _PyBytes_Resize(&target, rc) < 0) {
             Py_INCREF(Py_None);
             return Py_None;
         }

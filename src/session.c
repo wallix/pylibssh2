@@ -260,7 +260,7 @@ PYLIBSSH2_Session_userauth_list(PYLIBSSH2_SESSION *self, PyObject *args)
        return NULL;
     }
 
-    return PyUnicode_FromString(auth_list);
+    return PyBytes_FromString(auth_list);
 }
 /* }}} */
 
@@ -296,7 +296,7 @@ PYLIBSSH2_Session_hostkey_hash(PYLIBSSH2_SESSION *self, PyObject *args)
         return Py_None;
     }
 
-    return PyUnicode_FromString(hash);
+    return PyBytes_FromString(hash);
 }
 /* }}} */
 
@@ -517,16 +517,16 @@ PYLIBSSH2_Session_session_methods(PYLIBSSH2_SESSION *self, PyObject *args)
 
     /* create a python dictionnary to store cryptographic algorithms */
     methods = PyDict_New();
-    PyDict_SetItemString(methods, "KEX", PyUnicode_FromString(kex));
-    PyDict_SetItemString(methods, "HOSTKEY", PyUnicode_FromString(hostkey));
-    PyDict_SetItemString(methods, "CRYPT_CS", PyUnicode_FromString(crypt_cs));
-    PyDict_SetItemString(methods, "CRYPT_SC", PyUnicode_FromString(crypt_sc));
-    PyDict_SetItemString(methods, "MAC_CS", PyUnicode_FromString(mac_cs));
-    PyDict_SetItemString(methods, "MAC_SC", PyUnicode_FromString(mac_sc));
-    PyDict_SetItemString(methods, "COMP_CS", PyUnicode_FromString(comp_cs));
-    PyDict_SetItemString(methods, "COMP_SC", PyUnicode_FromString(comp_sc));
-    PyDict_SetItemString(methods, "LANG_CS", PyUnicode_FromString(lang_cs));
-    PyDict_SetItemString(methods, "LANG_SC", PyUnicode_FromString(lang_sc));
+    PyDict_SetItemString(methods, "KEX", PyBytes_FromString(kex));
+    PyDict_SetItemString(methods, "HOSTKEY", PyBytes_FromString(hostkey));
+    PyDict_SetItemString(methods, "CRYPT_CS", PyBytes_FromString(crypt_cs));
+    PyDict_SetItemString(methods, "CRYPT_SC", PyBytes_FromString(crypt_sc));
+    PyDict_SetItemString(methods, "MAC_CS", PyBytes_FromString(mac_cs));
+    PyDict_SetItemString(methods, "MAC_SC", PyBytes_FromString(mac_sc));
+    PyDict_SetItemString(methods, "COMP_CS", PyBytes_FromString(comp_cs));
+    PyDict_SetItemString(methods, "COMP_SC", PyBytes_FromString(comp_sc));
+    PyDict_SetItemString(methods, "LANG_CS", PyBytes_FromString(lang_cs));
+    PyDict_SetItemString(methods, "LANG_SC", PyBytes_FromString(lang_sc));
 
     return methods;
 }
@@ -558,11 +558,7 @@ PYLIBSSH2_Session_session_method_pref(PYLIBSSH2_SESSION *self, PyObject *args)
         return NULL;
     }
 
-#if PY_MAJOR_VERSION >= 3
     return PyLong_FromLong(libssh2_session_method_pref(self->session, method, pref)==0?1:0);   
-#else
-    return PyInt_FromLong(libssh2_session_method_pref(self->session, method, pref)==0?1:0);   
-#endif
 }
 /* }}} */
 
@@ -886,15 +882,9 @@ stub_callback_func(LIBSSH2_SESSION *session,
 
     /* Performing Python callback with C API */
     result = PyEval_CallObject(py_callback_func, arglist);
-#if PY_MAJOR_VERSION >= 3
     if (result && PyLong_Check(result)) {
         rc = PyLong_AsLong(result);
     }
-#else
-    if (result && PyInt_Check(result)) {
-        rc = PyInt_AsLong(result);
-    }
-#endif
 
     /* Restore previous thread state and release acquired resources */
     PyGILState_Release(gstate);
@@ -1180,17 +1170,6 @@ PYLIBSSH2_Session_dealloc(PYLIBSSH2_SESSION *self)
 }
 /* }}} */
 
-/* {{{ PYLIBSSH2_Session_getattr
- */
-#if PY_MAJOR_VERSION < 3
-static PyObject *
-PYLIBSSH2_Session_getattr(PYLIBSSH2_SESSION *self, char *name)
-{
-    return Py_FindMethod(PYLIBSSH2_Session_methods, (PyObject *)self, name);
-}
-#endif
-/* }}} */
-
 /* {{{ PYLIBSSH2_Session_Type
  *
  * see /usr/include/python2.5/object.h line 261
@@ -1202,7 +1181,7 @@ PyTypeObject PYLIBSSH2_Session_Type = {
     0,                                       /* tp_itemsize */
     (destructor)PYLIBSSH2_Session_dealloc,   /* tp_dealloc */
     0,                                       /* tp_print */
-    0, /*(getattrfunc)PYLIBSSH2_Session_getattr,   tp_getattr */
+    0,                                       /* tp_getattr */
     0,                                       /* tp_setattr */
     0,                                       /* tp_compare */
     0,                                       /* tp_repr */

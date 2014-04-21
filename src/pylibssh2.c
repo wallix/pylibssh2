@@ -153,20 +153,6 @@ static PyMethodDef PYLIBSSH2_methods[] = {
 };
 /* }}} */
 
-#if PY_MAJOR_VERSION >= 3
-static struct PyModuleDef libssh2_moduledef = {
-    PyModuleDef_HEAD_INIT,
-    PYLIBSSH2_MODULE_NAME,      /* m_name */
-    PYLIBSSH2_doc,              /* m_doc */
-    -1,                         /* m_size */
-    PYLIBSSH2_methods,          /* m_methods */
-    NULL,                       /* m_reload */
-    NULL,                       /* m_traverse */
-    NULL,                       /* m_clear */
-    NULL,                       /* m_free */
-};
-#endif
-
 /* {{{ init_libssh2
  */
 PyMODINIT_FUNC
@@ -181,17 +167,32 @@ init_libssh2(void)
     PyObject *module, *dict;
 
 #if PY_MAJOR_VERSION >= 3
+    static struct PyModuleDef libssh2_moduledef = {
+        PyModuleDef_HEAD_INIT,
+        PYLIBSSH2_MODULE_NAME,      /* m_name */
+        PYLIBSSH2_doc,              /* m_doc */
+        -1,                         /* m_size */
+        PYLIBSSH2_methods,          /* m_methods */
+        NULL,                       /* m_reload */
+        NULL,                       /* m_traverse */
+        NULL,                       /* m_clear */
+        NULL,                       /* m_free */
+    };
+
     module = PyModule_Create(&libssh2_moduledef);
+    if (module == NULL) {
+        return NULL;
+    }
 #else
     module = Py_InitModule3(
         PYLIBSSH2_MODULE_NAME, 
         PYLIBSSH2_methods, 
         PYLIBSSH2_doc
     );
-#endif
     if (module == NULL) {
-        return NULL;
+        return;
     }
+#endif
 
     PYLIBSSH2_API[PYLIBSSH2_Session_New_NUM] = (void *) PYLIBSSH2_Session_New;
     PYLIBSSH2_API[PYLIBSSH2_Channel_New_NUM] = (void *) PYLIBSSH2_Channel_New;
@@ -259,6 +260,8 @@ init_libssh2(void)
 
     error:
     ;
+#if PY_MAJOR_VERSION >= 3
     return module;
+#endif
 }
 /* }}} */

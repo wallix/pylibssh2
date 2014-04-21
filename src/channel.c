@@ -324,19 +324,19 @@ PYLIBSSH2_Channel_read(PYLIBSSH2_CHANNEL *self, PyObject *args)
     if (!PyArg_ParseTuple(args, "i|i:read", &buffer_size))
         return NULL;
 
-    buffer = PyUnicode_FromStringAndSize(NULL, buffer_size);
+    buffer = PyBytes_FromStringAndSize(NULL, buffer_size);
     if (buffer == NULL) {
         return NULL;
     }
 
     if (libssh2_channel_eof(self->channel) != 1) {
         Py_BEGIN_ALLOW_THREADS
-        rc = libssh2_channel_read(self->channel, _PyUnicode_AsString(buffer),
+        rc = libssh2_channel_read(self->channel, PyBytes_AsString(buffer),
                                   buffer_size);
         Py_END_ALLOW_THREADS
 
         if (rc > 0) {
-            if (rc != buffer_size && PyUnicode_Resize(&buffer, rc) < 0)
+            if (rc != buffer_size && _PyBytes_Resize(&buffer, rc) < 0)
                 return NULL;
             return buffer;
         }
@@ -379,19 +379,19 @@ PYLIBSSH2_Channel_read_stderr(PYLIBSSH2_CHANNEL *self, PyObject *args)
     if (!PyArg_ParseTuple(args, "i|i:read_stderr", &buffer_size))
         return NULL;
 
-    buffer = PyUnicode_FromStringAndSize(NULL, buffer_size);
+    buffer = PyBytes_FromStringAndSize(NULL, buffer_size);
     if (buffer == NULL) {
         return NULL;
     }
 
     if (libssh2_channel_eof(self->channel) != 1) {
         Py_BEGIN_ALLOW_THREADS
-        rc = libssh2_channel_read_stderr(self->channel, _PyUnicode_AsString(buffer),
+        rc = libssh2_channel_read_stderr(self->channel, PyBytes_AsString(buffer),
                                   buffer_size);
         Py_END_ALLOW_THREADS
 
         if (rc > 0) {
-            if (rc != buffer_size && PyUnicode_Resize(&buffer, rc) < 0)
+            if (rc != buffer_size && _PyBytes_Resize(&buffer, rc) < 0)
                 return NULL;
             return buffer;
         }
@@ -435,18 +435,18 @@ PYLIBSSH2_Channel_read_ex(PYLIBSSH2_CHANNEL *self, PyObject *args)
 
     if (!PyArg_ParseTuple(args, "i|i:read_ex", &buffer_size, &stream_id))
         return NULL;
-    buffer = PyUnicode_FromStringAndSize(NULL, buffer_size);
+    buffer = PyBytes_FromStringAndSize(NULL, buffer_size);
     if (buffer == NULL) {
         return NULL;
     }
-    cbuf = _PyUnicode_AsString(buffer);
+    cbuf = PyBytes_AsString(buffer);
 
     Py_BEGIN_ALLOW_THREADS
     rc = libssh2_channel_read_ex(self->channel, stream_id, cbuf, buffer_size);
     Py_END_ALLOW_THREADS
 
     if (rc > 0) {
-       if (rc != buffer_size && PyUnicode_Resize(&buffer, rc) < 0)
+       if (rc != buffer_size && _PyBytes_Resize(&buffer, rc) < 0)
             return NULL;
     }
     /**
@@ -800,17 +800,6 @@ PYLIBSSH2_Channel_dealloc(PYLIBSSH2_CHANNEL *self)
 }
 /* }}} */
 
-/* {{{ PYLIBSSH2_Channel_getattr
- */
- /*
-static PyObject *
-PYLIBSSH2_Channel_getattr(PYLIBSSH2_CHANNEL *self, char *name)
-{
-    return Py_FindMethod(PYLIBSSH2_Channel_methods, (PyObject *)self, name);
-}
-*/
-/* }}} */
-
 /* {{{ PYLIBSSH2_Channel_Type
  * see /usr/include/python2.5/object.h line 261
  */
@@ -821,7 +810,7 @@ PyTypeObject PYLIBSSH2_Channel_Type = {
     0,                                      /* tp_itemsize */
     (destructor)PYLIBSSH2_Channel_dealloc,  /* tp_dealloc */
     0,                                      /* tp_print */
-    0, /* (getattrfunc)PYLIBSSH2_Channel_getattr,  tp_getattr */
+    0,                                      /* tp_getattr */
     0,                                      /* tp_setattr */
     0,                                      /* tp_compare */
     0,                                      /* tp_repr */

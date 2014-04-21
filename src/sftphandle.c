@@ -57,14 +57,6 @@ PYLIBSSH2_Sftphandle_dealloc(PYLIBSSH2_SFTPHANDLE *self)
     PyObject_Del(self);
 }
 
-#if PY_MAJOR_VERSION < 3
-static PyObject *
-PYLIBSSH2_Sftphandle_getattr(PYLIBSSH2_SFTPHANDLE *self, char *name)
-{
-    return Py_FindMethod(PYLIBSSH2_Sftphandle_methods, (PyObject *)self, name);
-}
-#endif
-
 /*
  * see /usr/include/python2.5/object.c line 261
  */
@@ -75,7 +67,7 @@ PyTypeObject PYLIBSSH2_Sftphandle_Type = {
     0,                                     /* tp_itemsize */
     (destructor)PYLIBSSH2_Sftphandle_dealloc,    /* tp_dealloc */
     0,                                     /* tp_print */
-    0, /* (getattrfunc)PYLIBSSH2_Sftphandle_getattr,   tp_getattr */
+    0,                                     /* tp_getattr */
     0,                                     /* tp_setattr */
     0,                                     /* tp_compare */
     0,                                     /* tp_repr */

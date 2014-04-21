@@ -119,17 +119,6 @@ PYLIBSSH2_Listener_dealloc(PYLIBSSH2_LISTENER *self)
 }
 /* }}} */
 
-/* {{{ PYLIBSSH2_Listener_getattr
- */
-#if PY_MAJOR_VERSION < 3
-static PyObject *
-PYLIBSSH2_Listener_getattr(PYLIBSSH2_LISTENER *self, char *name)
-{
-    return Py_FindMethod(PYLIBSSH2_Listener_methods, (PyObject *) self, name);
-}
-#endif
-/* }}} */
-
 /* {{{ PYLIBSSH2_Listener_Type
  *
  * see /usr/include/python2.5/object.h line 261
@@ -141,7 +130,7 @@ PyTypeObject PYLIBSSH2_Listener_Type = {
     0,                                       /* tp_itemsize */
     (destructor)PYLIBSSH2_Listener_dealloc,  /* tp_dealloc */
     0,                                       /* tp_print */
-    0, /* (getattrfunc)PYLIBSSH2_Listener_getattr,  tp_getattr */
+    0,                                       /* tp_getattr */
     0,                                       /* tp_setattr */
     0,                                       /* tp_compare */
     0,                                       /* tp_repr */
