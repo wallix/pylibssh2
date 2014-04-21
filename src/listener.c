@@ -119,28 +119,18 @@ PYLIBSSH2_Listener_dealloc(PYLIBSSH2_LISTENER *self)
 }
 /* }}} */
 
-/* {{{ PYLIBSSH2_Listener_getattr
- */
-static PyObject *
-PYLIBSSH2_Listener_getattr(PYLIBSSH2_LISTENER *self, char *name)
-{
-    return Py_FindMethod(PYLIBSSH2_Listener_methods, (PyObject *) self, name);
-}
-/* }}} */
-
 /* {{{ PYLIBSSH2_Listener_Type
  *
  * see /usr/include/python2.5/object.h line 261
  */
 PyTypeObject PYLIBSSH2_Listener_Type = {
-    PyObject_HEAD_INIT(NULL)
-    0,                                       /* ob_size */
-    "Listener",                              /* tp_name */
+    PyVarObject_HEAD_INIT(NULL, 0)
+    PYLIBSSH2_MODULE_NAME ".Listener",       /* tp_name */
     sizeof(PYLIBSSH2_LISTENER),              /* tp_basicsize */
     0,                                       /* tp_itemsize */
     (destructor)PYLIBSSH2_Listener_dealloc,  /* tp_dealloc */
     0,                                       /* tp_print */
-    (getattrfunc)PYLIBSSH2_Listener_getattr, /* tp_getattr */
+    0,                                       /* tp_getattr */
     0,                                       /* tp_setattr */
     0,                                       /* tp_compare */
     0,                                       /* tp_repr */
@@ -155,6 +145,13 @@ PyTypeObject PYLIBSSH2_Listener_Type = {
     0,                                       /* tp_as_buffer */
     Py_TPFLAGS_DEFAULT,                      /* tp_flags */
     "Listener objects",                      /* tp_doc */
+    0,                                      /* tp_traverse */
+    0,                                      /* tp_clear */
+    0,                                      /* tp_richcompare */
+    0,                                      /* tp_weaklistoffset */
+    0,                                      /* tp_iter */
+    0,                                      /* tp_iternext */
+    PYLIBSSH2_Listener_methods,             /* tp_methods */
 };
 /* }}} */
 
@@ -163,10 +160,16 @@ PyTypeObject PYLIBSSH2_Listener_Type = {
 int
 init_libssh2_Listener(PyObject *dict)
 {
-    PYLIBSSH2_Listener_Type.ob_type = &PyType_Type;
-    Py_XINCREF(&PYLIBSSH2_Listener_Type);
+    int rc;
+
+    Py_TYPE(&PYLIBSSH2_Listener_Type) = &PyType_Type;
+    rc = PyType_Ready(&PYLIBSSH2_Listener_Type);
+    if (rc < 0)
+        return rc;
+
+    Py_INCREF(&PYLIBSSH2_Listener_Type);
     PyDict_SetItemString(dict, "ListenerType", (PyObject *)&PYLIBSSH2_Listener_Type);
 
-    return 1;
+    return rc;
 }
 /* }}} */

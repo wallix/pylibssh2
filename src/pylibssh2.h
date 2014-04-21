@@ -27,6 +27,7 @@
 #include <libssh2_sftp.h>
 #include <libssh2_publickey.h>
 
+#include "py3.h"
 #include "channel.h"
 #include "listener.h"
 #include "sftp.h"

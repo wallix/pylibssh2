@@ -156,12 +156,34 @@ static PyMethodDef PYLIBSSH2_methods[] = {
 /* {{{ init_libssh2
  */
 PyMODINIT_FUNC
+#if PY_MAJOR_VERSION >= 3
+PyInit__libssh2(void)
+#else
 init_libssh2(void)
+#endif
 {
     static void *PYLIBSSH2_API[PYLIBSSH2_API_pointers];
     PyObject *c_api_object;
     PyObject *module, *dict;
 
+#if PY_MAJOR_VERSION >= 3
+    static struct PyModuleDef libssh2_moduledef = {
+        PyModuleDef_HEAD_INIT,
+        PYLIBSSH2_MODULE_NAME,      /* m_name */
+        PYLIBSSH2_doc,              /* m_doc */
+        -1,                         /* m_size */
+        PYLIBSSH2_methods,          /* m_methods */
+        NULL,                       /* m_reload */
+        NULL,                       /* m_traverse */
+        NULL,                       /* m_clear */
+        NULL,                       /* m_free */
+    };
+
+    module = PyModule_Create(&libssh2_moduledef);
+    if (module == NULL) {
+        return NULL;
+    }
+#else
     module = Py_InitModule3(
         PYLIBSSH2_MODULE_NAME, 
         PYLIBSSH2_methods, 
@@ -170,13 +192,18 @@ init_libssh2(void)
     if (module == NULL) {
         return;
     }
+#endif
 
     PYLIBSSH2_API[PYLIBSSH2_Session_New_NUM] = (void *) PYLIBSSH2_Session_New;
     PYLIBSSH2_API[PYLIBSSH2_Channel_New_NUM] = (void *) PYLIBSSH2_Channel_New;
     PYLIBSSH2_API[PYLIBSSH2_Sftp_New_NUM] = (void *) PYLIBSSH2_Sftp_New;
     PYLIBSSH2_API[PYLIBSSH2_Sftphandle_New_NUM] = (void *) PYLIBSSH2_Sftphandle_New;
 
+#if PY_MAJOR_VERSION >= 3
+    c_api_object = PyCapsule_New((void *)PYLIBSSH2_API, NULL, NULL);
+#else
     c_api_object = PyCObject_FromVoidPtr((void *)PYLIBSSH2_API, NULL);
+#endif
     if (c_api_object != NULL) {
         PyModule_AddObject(module, "_C_API", c_api_object);
     }
@@ -218,20 +245,23 @@ init_libssh2(void)
     PyModule_AddStringConstant(module, "LIBSSH2_VERSION", LIBSSH2_VERSION);
 
     dict = PyModule_GetDict(module);
-    if (!init_libssh2_Session(dict)) {
+    if (init_libssh2_Session(dict) < 0) {
         goto error;
     }
-    if (!init_libssh2_Channel(dict)) {
+    if (init_libssh2_Channel(dict) < 0) {
         goto error;
     }
-    if (!init_libssh2_Sftp(dict)) {
+    if (init_libssh2_Sftp(dict) < 0) {
         goto error;
     }
-    if (!init_libssh2_Sftphandle(dict)) {
+    if (init_libssh2_Sftphandle(dict) < 0) {
         goto error;
     }
 
     error:
     ;
+#if PY_MAJOR_VERSION >= 3
+    return module;
+#endif
 }
 /* }}} */

@@ -137,14 +137,14 @@ PYLIBSSH2_Sftp_readdir(PYLIBSSH2_SFTP *self, PyObject *args)
         return NULL;
     }
 
-    buffer = PyString_FromStringAndSize(NULL, longentry_maxlen);
+    buffer = PyBytes_FromStringAndSize(NULL, longentry_maxlen);
     if (buffer == NULL) {
         Py_INCREF(Py_None);
         return Py_None;
     }
 
     Py_BEGIN_ALLOW_THREADS
-    buffer_maxlen = libssh2_sftp_readdir(handle->sftphandle, PyString_AsString(buffer),
+    buffer_maxlen = libssh2_sftp_readdir(handle->sftphandle, PyBytes_AsString(buffer),
                                          longentry_maxlen, &attrs);
     Py_END_ALLOW_THREADS
 
@@ -158,7 +158,7 @@ PYLIBSSH2_Sftp_readdir(PYLIBSSH2_SFTP *self, PyObject *args)
     }
 
     if (buffer_maxlen != longentry_maxlen && 
-        _PyString_Resize(&buffer, buffer_maxlen) < 0) {
+        _PyBytes_Resize(&buffer, buffer_maxlen) < 0) {
         Py_INCREF(Py_None);
         return Py_None;
     }
@@ -197,7 +197,7 @@ PYLIBSSH2_Sftp_listdir(PYLIBSSH2_SFTP *self, PyObject *args)
 
     all = PyList_New(0);
     while (1) {
-        buffer = PyString_FromStringAndSize(NULL, longentry_maxlen);
+        buffer = PyBytes_FromStringAndSize(NULL, longentry_maxlen);
         if (buffer == NULL) {
             Py_INCREF(Py_None);
             return Py_None;
@@ -205,7 +205,7 @@ PYLIBSSH2_Sftp_listdir(PYLIBSSH2_SFTP *self, PyObject *args)
 
         Py_BEGIN_ALLOW_THREADS
         buffer_maxlen = libssh2_sftp_readdir(handle->sftphandle, 
-            PyString_AsString(buffer), longentry_maxlen, &attrs);
+            PyBytes_AsString(buffer), longentry_maxlen, &attrs);
         Py_END_ALLOW_THREADS
 
         if (buffer_maxlen == 0) { 
@@ -216,7 +216,7 @@ PYLIBSSH2_Sftp_listdir(PYLIBSSH2_SFTP *self, PyObject *args)
         }
 
         if ( buffer_maxlen != longentry_maxlen && 
-             _PyString_Resize(&buffer, buffer_maxlen) < 0) {
+             _PyBytes_Resize(&buffer, buffer_maxlen) < 0) {
             Py_INCREF(Py_None);
             return Py_None;
         }
@@ -314,19 +314,19 @@ PYLIBSSH2_Sftp_read(PYLIBSSH2_SFTP *self, PyObject *args)
         return NULL;
     }
 
-    buffer = PyString_FromStringAndSize(NULL, buffer_maxlen);
+    buffer = PyBytes_FromStringAndSize(NULL, buffer_maxlen);
     if (buffer == NULL) {
         Py_INCREF(Py_None);
         return Py_None;
     }
 
     Py_BEGIN_ALLOW_THREADS
-    rc = libssh2_sftp_read(handle->sftphandle, PyString_AsString(buffer),
+    rc = libssh2_sftp_read(handle->sftphandle, PyBytes_AsString(buffer),
                            buffer_maxlen);
     Py_END_ALLOW_THREADS
 
     if (rc > 0) {
-        if ( rc != buffer_maxlen && _PyString_Resize(&buffer, rc) < 0) {
+        if ( rc != buffer_maxlen && _PyBytes_Resize(&buffer, rc) < 0) {
             Py_INCREF(Py_None);
             return Py_None;
         }
@@ -393,7 +393,7 @@ PYLIBSSH2_Sftp_tell(PYLIBSSH2_SFTP *self, PyObject *args)
         return NULL;
     }
 
-    return PyInt_FromLong(libssh2_sftp_tell(handle->sftphandle));
+    return PyLong_FromLong(libssh2_sftp_tell(handle->sftphandle));
 }
 /* }}} */
 
@@ -420,7 +420,7 @@ PYLIBSSH2_Sftp_seek(PYLIBSSH2_SFTP *self, PyObject *args)
     libssh2_sftp_seek(handle->sftphandle, offset);
     Py_END_ALLOW_THREADS
 
-    return PyInt_FromLong(1);
+    return PyLong_FromLong(1);
 }
 /* }}} */
 
@@ -555,7 +555,7 @@ PYLIBSSH2_Sftp_realpath(PYLIBSSH2_SFTP *self, PyObject *args)
         return NULL;
     }
 
-    target = PyString_FromStringAndSize(NULL, target_len);
+    target = PyBytes_FromStringAndSize(NULL, target_len);
     if (target == NULL) {
         Py_INCREF(Py_None);
         return Py_None;
@@ -563,11 +563,11 @@ PYLIBSSH2_Sftp_realpath(PYLIBSSH2_SFTP *self, PyObject *args)
 
     Py_BEGIN_ALLOW_THREADS
     rc = libssh2_sftp_symlink_ex(self->sftp, path, path_len, 
-            PyString_AsString(target), target_len, type);
+            PyBytes_AsString(target), target_len, type);
     Py_END_ALLOW_THREADS
 
     if (rc > 0) {
-        if (rc != target_len && _PyString_Resize(&target, rc) < 0) {
+        if (rc != target_len && _PyBytes_Resize(&target, rc) < 0) {
             Py_INCREF(Py_None);
             return Py_None;
         }
@@ -779,11 +779,13 @@ PYLIBSSH2_Sftp_dealloc(PYLIBSSH2_SFTP *self)
 
 /* {{{ PYLIBSSH2_Sftp_getattr
  */
+#if 0
 static PyObject *
 PYLIBSSH2_Sftp_getattr(PYLIBSSH2_SFTP *self, char *name)
 {
     return Py_FindMethod(PYLIBSSH2_Sftp_methods, (PyObject *)self, name);
 }
+#endif
 /* }}} */
 
 /* {{{ PYLIBSSH2_Sftp_Type
@@ -791,14 +793,13 @@ PYLIBSSH2_Sftp_getattr(PYLIBSSH2_SFTP *self, char *name)
  * see /usr/include/python2.5/object.h line 261
  */
 PyTypeObject PYLIBSSH2_Sftp_Type = {
-    PyObject_HEAD_INIT(NULL)
-    0,                                       /* ob_size */
-    "Sftp",                                  /* tp_name */
+    PyVarObject_HEAD_INIT(NULL, 0)
+    PYLIBSSH2_MODULE_NAME ".Sftp",           /* tp_name */
     sizeof(PYLIBSSH2_SFTP),                  /* tp_basicsize */
     0,                                       /* tp_itemsize */
     (destructor)PYLIBSSH2_Sftp_dealloc,      /* tp_dealloc */
     0,                                       /* tp_print */
-    (getattrfunc)PYLIBSSH2_Sftp_getattr,     /* tp_getattr */
+    0, /* (getattrfunc)PYLIBSSH2_Sftp_getattr,      tp_getattr */
     0,                                       /* tp_setattr */
     0,                                       /* tp_compare */
     0,                                       /* tp_repr */
@@ -813,6 +814,13 @@ PyTypeObject PYLIBSSH2_Sftp_Type = {
     0,                                       /* tp_as_buffer */
     Py_TPFLAGS_DEFAULT,                      /* tp_flags */
     "Sftp objects",                          /* tp_doc */
+    0,                                       /* tp_traverse */
+    0,                                       /* tp_clear */
+    0,                                       /* tp_richcompare */
+    0,                                       /* tp_weaklistoffset */
+    0,                                       /* tp_iter */
+    0,                                       /* tp_iternext */
+    PYLIBSSH2_Sftp_methods,                  /* tp_methods */
 };
 /* }}} */
 
@@ -821,10 +829,18 @@ PyTypeObject PYLIBSSH2_Sftp_Type = {
 int
 init_libssh2_Sftp(PyObject *dict)
 {
-    PYLIBSSH2_Sftp_Type.ob_type = &PyType_Type;
-    Py_XINCREF(&PYLIBSSH2_Sftp_Type);
+    int rc;
+
+    Py_TYPE(&PYLIBSSH2_Sftp_Type) = &PyType_Type;
+
+    rc = PyType_Ready(&PYLIBSSH2_Sftp_Type);
+    if (rc < 0)
+        return rc;
+
+    Py_INCREF(&PYLIBSSH2_Channel_Type);
+
     PyDict_SetItemString(dict, "SFTPType", (PyObject *) &PYLIBSSH2_Sftp_Type);
 
-    return 1;
+    return rc;
 }
 /* }}} */

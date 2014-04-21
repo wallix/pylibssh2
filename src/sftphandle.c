@@ -57,24 +57,17 @@ PYLIBSSH2_Sftphandle_dealloc(PYLIBSSH2_SFTPHANDLE *self)
     PyObject_Del(self);
 }
 
-static PyObject *
-PYLIBSSH2_Sftphandle_getattr(PYLIBSSH2_SFTPHANDLE *self, char *name)
-{
-    return Py_FindMethod(PYLIBSSH2_Sftphandle_methods, (PyObject *)self, name);
-}
-
 /*
  * see /usr/include/python2.5/object.c line 261
  */
 PyTypeObject PYLIBSSH2_Sftphandle_Type = {
-    PyObject_HEAD_INIT(NULL)
-    0,                                     /* ob_size */
+    PyVarObject_HEAD_INIT(NULL, 0)
     "Sftphandle",                          /* tp_name */
     sizeof(PYLIBSSH2_SFTPHANDLE),               /* tp_basicsize */
     0,                                     /* tp_itemsize */
     (destructor)PYLIBSSH2_Sftphandle_dealloc,    /* tp_dealloc */
     0,                                     /* tp_print */
-    (getattrfunc)PYLIBSSH2_Sftphandle_getattr,  /* tp_getattr */
+    0,                                     /* tp_getattr */
     0,                                     /* tp_setattr */
     0,                                     /* tp_compare */
     0,                                     /* tp_repr */
@@ -89,14 +82,27 @@ PyTypeObject PYLIBSSH2_Sftphandle_Type = {
     0,                                     /* tp_as_buffer */
     Py_TPFLAGS_DEFAULT,                    /* tp_flags */
     "Sftphandle objects",                  /* tp_doc */
+    0,                                      /* tp_traverse */
+    0,                                      /* tp_clear */
+    0,                                      /* tp_richcompare */
+    0,                                      /* tp_weaklistoffset */
+    0,                                      /* tp_iter */
+    0,                                      /* tp_iternext */
+    PYLIBSSH2_Sftphandle_methods,           /* tp_methods */
 };
 
 int
 init_libssh2_Sftphandle(PyObject *dict)
 {
-    PYLIBSSH2_Sftphandle_Type.ob_type = &PyType_Type;
-    Py_XINCREF(&PYLIBSSH2_Sftphandle_Type);
+    int rc;
+
+    Py_TYPE(&PYLIBSSH2_Sftphandle_Type) = &PyType_Type;
+    rc = PyType_Ready(&PYLIBSSH2_Sftphandle_Type);
+    if (rc < 0)
+        return rc;
+
+    Py_INCREF(&PYLIBSSH2_Sftphandle_Type);
     PyDict_SetItemString(dict, "SftphandleType", (PyObject *)&PYLIBSSH2_Sftphandle_Type);
 
-    return 1;
+    return rc;
 }

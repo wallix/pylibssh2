@@ -38,18 +38,18 @@ class MySCPClient:
             self.sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
             self.sock.connect((self.hostname, self.port))
             self.sock.setblocking(1)
-        except Exception, e:
-            print "SockError: Can't connect socket to %s:%d" % (self.hostname, self.port)
-            print e
+        except Exception as e:
+            print("SockError: Can't connect socket to %s:%d" % (self.hostname, self.port))
+            print(e)
 
         try:
             self.session = libssh2.Session()
             self.session.set_banner()
             self.session.startup(self.sock)
             self.session.userauth_password(self.username, self.password)
-        except Exception, e:
-            print "SSHError: Can't startup session"
-            print e
+        except Exception as e:
+            print("SSHError: Can't startup session")
+            print(e)
 
     def send(self, remote_path, mode=0644):
         datas=""
@@ -71,7 +71,7 @@ class MySCPClient:
 
 if __name__ == '__main__' :
     if len(sys.argv) == 1:
-        print usage
+        print(usage)
         sys.exit(1)
     myscp = MySCPClient(
         hostname=sys.argv[1],

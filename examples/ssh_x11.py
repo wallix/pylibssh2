@@ -66,7 +66,7 @@ def trace(session):
 
 if __name__ == '__main__':
     if len(sys.argv) == 1:
-        print usage
+        print(usage)
         sys.exit(1)
 
     DEBUG=False
@@ -86,10 +86,10 @@ if __name__ == '__main__':
     try:
         sock.connect((hostname, port))
         sock.setblocking(0)
-    except Exception, e:
-        print "Can't connect socket to (%s:%d): %s" % (
+    except Exception as e:
+        print("Can't connect socket to (%s:%d): %s" % (
            hostname, port, e
-        )
+        ))
         sys.exit(1)
 
     # start session
@@ -99,8 +99,8 @@ if __name__ == '__main__':
         # trace session on stderr if DEBUG=True
         trace(session)
         session.startup(sock)
-    except SessionException, e:
-        print "Can't startup session: %s" % e
+    except SessionException as e:
+        print("Can't startup session: %s" % e)
         sys.exit(1)
 
     # register X11 callback
@@ -111,10 +111,10 @@ if __name__ == '__main__':
 
     try:
         session.userauth_password(username, password)
-    except SessionException, e:
-        print "Failed to authenticate user with %s %s" % (
+    except SessionException as e:
+        print("Failed to authenticate user with %s %s" % (
             username, password
-        )
+        ))
         sys.exit(1)
 
     try:
@@ -179,8 +179,8 @@ if __name__ == '__main__':
             if channel.eof():
                 break
 
-    except ChannelException, e:
-        print "Channel exception: %s" % e
+    except ChannelException as e:
+        print("Channel exception: %s" % e)
     finally:
         channel.close()
 

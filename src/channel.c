@@ -43,7 +43,7 @@ PYLIBSSH2_Channel_close(PYLIBSSH2_CHANNEL *self, PyObject *args)
 
     Py_BEGIN_ALLOW_THREADS
     rc = libssh2_channel_close(self->channel);
-    if (rc != LIBSSH2_ERROR_EAGAIN)
+    if (rc && rc != LIBSSH2_ERROR_EAGAIN)
         rc = libssh2_channel_wait_closed(self->channel);
     Py_END_ALLOW_THREADS
 
@@ -324,19 +324,19 @@ PYLIBSSH2_Channel_read(PYLIBSSH2_CHANNEL *self, PyObject *args)
     if (!PyArg_ParseTuple(args, "i|i:read", &buffer_size))
         return NULL;
 
-    buffer = PyString_FromStringAndSize(NULL, buffer_size);
+    buffer = PyBytes_FromStringAndSize(NULL, buffer_size);
     if (buffer == NULL) {
         return NULL;
     }
 
     if (libssh2_channel_eof(self->channel) != 1) {
         Py_BEGIN_ALLOW_THREADS
-        rc = libssh2_channel_read(self->channel, PyString_AsString(buffer),
+        rc = libssh2_channel_read(self->channel, PyBytes_AsString(buffer),
                                   buffer_size);
         Py_END_ALLOW_THREADS
 
         if (rc > 0) {
-            if (rc != buffer_size && _PyString_Resize(&buffer, rc) < 0)
+            if (rc != buffer_size && _PyBytes_Resize(&buffer, rc) < 0)
                 return NULL;
             return buffer;
         }
@@ -379,19 +379,19 @@ PYLIBSSH2_Channel_read_stderr(PYLIBSSH2_CHANNEL *self, PyObject *args)
     if (!PyArg_ParseTuple(args, "i|i:read_stderr", &buffer_size))
         return NULL;
 
-    buffer = PyString_FromStringAndSize(NULL, buffer_size);
+    buffer = PyBytes_FromStringAndSize(NULL, buffer_size);
     if (buffer == NULL) {
         return NULL;
     }
 
     if (libssh2_channel_eof(self->channel) != 1) {
         Py_BEGIN_ALLOW_THREADS
-        rc = libssh2_channel_read_stderr(self->channel, PyString_AsString(buffer),
+        rc = libssh2_channel_read_stderr(self->channel, PyBytes_AsString(buffer),
                                   buffer_size);
         Py_END_ALLOW_THREADS
 
         if (rc > 0) {
-            if (rc != buffer_size && _PyString_Resize(&buffer, rc) < 0)
+            if (rc != buffer_size && _PyBytes_Resize(&buffer, rc) < 0)
                 return NULL;
             return buffer;
         }
@@ -435,18 +435,18 @@ PYLIBSSH2_Channel_read_ex(PYLIBSSH2_CHANNEL *self, PyObject *args)
 
     if (!PyArg_ParseTuple(args, "i|i:read_ex", &buffer_size, &stream_id))
         return NULL;
-    buffer = PyString_FromStringAndSize(NULL, buffer_size);
+    buffer = PyBytes_FromStringAndSize(NULL, buffer_size);
     if (buffer == NULL) {
         return NULL;
     }
-    cbuf = PyString_AsString(buffer);
+    cbuf = PyBytes_AsString(buffer);
 
     Py_BEGIN_ALLOW_THREADS
     rc = libssh2_channel_read_ex(self->channel, stream_id, cbuf, buffer_size);
     Py_END_ALLOW_THREADS
 
     if (rc > 0) {
-       if (rc != buffer_size && _PyString_Resize(&buffer, rc) < 0)
+       if (rc != buffer_size && _PyBytes_Resize(&buffer, rc) < 0)
             return NULL;
     }
     /**
@@ -800,27 +800,17 @@ PYLIBSSH2_Channel_dealloc(PYLIBSSH2_CHANNEL *self)
 }
 /* }}} */
 
-/* {{{ PYLIBSSH2_Channel_getattr
- */
-static PyObject *
-PYLIBSSH2_Channel_getattr(PYLIBSSH2_CHANNEL *self, char *name)
-{
-    return Py_FindMethod(PYLIBSSH2_Channel_methods, (PyObject *)self, name);
-}
-/* }}} */
-
 /* {{{ PYLIBSSH2_Channel_Type
  * see /usr/include/python2.5/object.h line 261
  */
 PyTypeObject PYLIBSSH2_Channel_Type = {
-    PyObject_HEAD_INIT(NULL)
-    0,                                      /* ob_size */
-    "Channel",                              /* tp_name */
+    PyVarObject_HEAD_INIT(NULL, 0)
+    PYLIBSSH2_MODULE_NAME ".Channel",       /* tp_name */
     sizeof(PYLIBSSH2_CHANNEL),              /* tp_basicsize */
     0,                                      /* tp_itemsize */
     (destructor)PYLIBSSH2_Channel_dealloc,  /* tp_dealloc */
     0,                                      /* tp_print */
-    (getattrfunc)PYLIBSSH2_Channel_getattr, /* tp_getattr */
+    0,                                      /* tp_getattr */
     0,                                      /* tp_setattr */
     0,                                      /* tp_compare */
     0,                                      /* tp_repr */
@@ -835,6 +825,13 @@ PyTypeObject PYLIBSSH2_Channel_Type = {
     0,                                      /* tp_as_buffer */
     Py_TPFLAGS_DEFAULT,                     /* tp_flags */
     "Channel objects",                      /* tp_doc */
+    0,                                      /* tp_traverse */
+    0,                                      /* tp_clear */
+    0,                                      /* tp_richcompare */
+    0,                                      /* tp_weaklistoffset */
+    0,                                      /* tp_iter */
+    0,                                      /* tp_iternext */
+    PYLIBSSH2_Channel_methods,              /* tp_methods */
 };
 /* }}} */
 
@@ -843,10 +840,15 @@ PyTypeObject PYLIBSSH2_Channel_Type = {
 int
 init_libssh2_Channel(PyObject *dict)
 {
-    PYLIBSSH2_Channel_Type.ob_type = &PyType_Type;
-    Py_XINCREF(&PYLIBSSH2_Channel_Type);
+    int rc;
+
+    Py_TYPE(&PYLIBSSH2_Channel_Type) = &PyType_Type;
+    rc = PyType_Ready(&PYLIBSSH2_Channel_Type);
+    if (rc < 0)
+        return rc;
+    Py_INCREF(&PYLIBSSH2_Channel_Type);
     PyDict_SetItemString(dict, "ChannelType", (PyObject *)&PYLIBSSH2_Channel_Type);
 
-    return 1;
+    return rc;
 }
 /* }}} */
