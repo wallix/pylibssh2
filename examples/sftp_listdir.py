@@ -38,18 +38,18 @@ class MySFTPClient:
             self.sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
             self.sock.connect((self.hostname, self.port))
             self.sock.setblocking(1)
-        except Exception, e:
-            print "SockError: Can't connect socket to %s:%d" % (self.hostname, self.port)
-            print e
+        except Exception as e:
+            print("SockError: Can't connect socket to %s:%d" % (self.hostname, self.port))
+            print(e)
 
         try:
             self.session = libssh2.Session()
             self.session.set_banner()
             self.session.startup(self.sock)
             self.session.userauth_password(self.username, self.password)
-        except Exception, e:
-            print "SSHError: Can't startup session"
-            print e
+        except Exception as e:
+            print("SSHError: Can't startup session")
+            print(e)
 
         # use low level layer because we don't yet provide High layer for sftp
         self.sftp = self.session._session.sftp_init()
@@ -60,10 +60,10 @@ class MySFTPClient:
             while True:
                 data = self.sftp.readdir(handle)
                 if not data: break
-                print data
+                print(data)
 
             for file, attribute in self.sftp.listdir(handle):
-                print file, attribute
+                print(file, attribute)
 
         self.sftp.close(handle)
 
@@ -73,7 +73,7 @@ class MySFTPClient:
 
 if __name__ == '__main__' :
     if len(sys.argv) == 1:
-        print usage
+        print(usage)
         sys.exit(1)
     mysftp = MySFTPClient(
         hostname=sys.argv[1],

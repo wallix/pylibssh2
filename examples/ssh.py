@@ -42,9 +42,9 @@ class MySSHClient:
             self.sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
             self.sock.connect((self.hostname, self.port))
             self.sock.setblocking(1)
-        except Exception, e:
-            print "SockError: Can't connect socket to %s:%d" % (self.hostname, self.port)
-            print e
+        except Exception as e:
+            print("SockError: Can't connect socket to %s:%d" % (self.hostname, self.port))
+            print(e)
 
         try:
             self.session = libssh2.Session()
@@ -58,9 +58,9 @@ class MySSHClient:
                 sys.stdout.write("Authentication that can continue %s\r\n" % auth_list)
             self.session.userauth_password(self.username, self.password)
 
-        except Exception, e:
-            print "SSHError: Can't startup session"
-            print e
+        except Exception as e:
+            print("SSHError: Can't startup session")
+            print(e)
 
     def run(self):
 
@@ -91,8 +91,8 @@ class MySSHClient:
                     data = sys.stdin.read(1).replace('\n','\r\n')
                     channel.write(data)
 
-        except Exception,e:
-            print e
+        except Exception as e:
+            print(e)
         finally:
             channel.close()
 
@@ -103,7 +103,7 @@ class MySSHClient:
 
 if __name__ == '__main__' :
     if len(sys.argv) == 1:
-        print usage
+        print(usage)
         sys.exit(1)
 
     # save terminal settings

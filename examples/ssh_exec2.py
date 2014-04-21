@@ -43,8 +43,8 @@ class SSHRemoteClientNonBlocking(object):
             # return if not blocked
             return
 
-        readfds = [self.sock] if (blockdir & 01) else []
-        writefds = [self.sock] if (blockdir & 02) else []
+        readfds = [self.sock] if (blockdir & 0x1) else []
+        writefds = [self.sock] if (blockdir & 0x2) else []
         select(readfds, writefds, [])        
         return
 
@@ -108,7 +108,7 @@ class SSHRemoteClientNonBlocking(object):
             data1 = self.chan.read_ex()
             while data1[0] > 0:
                 my_print('Received data')
-                print data1[1]
+                print(data1[1].encode('utf-8'))
                 data1 = self.chan.read_ex()        
 
 
@@ -126,14 +126,14 @@ class SSHRemoteClientNonBlocking(object):
 if __name__ == '__main__':
     try:
         if len(sys.argv) == 1:
-            print usage
+            print(usage)
             sys.exit(1)
         src = SSHRemoteClientNonBlocking(sys.argv[1], sys.argv[2], sys.argv[3])
         src.startup()
         src.auth()
         src.open_channel()
         src.execute(sys.argv[4])
-    except Exception, e:
-        print str(e)
-    except KeyboardInterrupt, e:
+    except Exception as e:
+        print(str(e))
+    except KeyboardInterrupt as e:
         sys.exit(1)

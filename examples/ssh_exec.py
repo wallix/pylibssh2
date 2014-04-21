@@ -62,7 +62,7 @@ class SSHRemoteClient(object):
             data = self.channel.read(buffer)
             if data == '' or data is None: break
             my_print(type(data))
-            print(data.strip())
+            print(data.strip().decode('utf-8'))
 
         self.channel.close()
 
