@@ -47,9 +47,9 @@ class SSHRemoteClient(object):
             my_print(self.session.last_error())
             self.session.userauth_password(self.username,self.password)
             my_print(self.session.last_error())
-        except Exception, e:
-            print str(e)
-            raise Exception, self.session.last_error()
+        except Exception as e:
+            print(str(e))
+            raise Exception(self.session.last_error())
 
         self.channel = self.session.open_session()
         my_print(self.session.last_error())
@@ -62,7 +62,7 @@ class SSHRemoteClient(object):
             data = self.channel.read(buffer)
             if data == '' or data is None: break
             my_print(type(data))
-            print data.strip()
+            print(data.strip())
 
         self.channel.close()
 
@@ -73,11 +73,11 @@ class SSHRemoteClient(object):
 if __name__ == '__main__':
     try:
         if len(sys.argv) == 1:
-            print usage
+            print(usage)
             sys.exit(1)
         src = SSHRemoteClient(sys.argv[1], sys.argv[2], sys.argv[3])
         src.execute(sys.argv[4])
-    except Exception, e:
-        print str(e)
-    except KeyboardInterrupt, e:
+    except Exception as e:
+        print(str(e))
+    except KeyboardInterrupt as e:
         sys.exit(1)

@@ -19,11 +19,11 @@
 #
 __doc__ = """Python binding for libssh2 library"""
 
-from version import *
+from libssh2.version import *
 
-from channel import ChannelException, Channel
-from session import SessionException, Session
-from sftp import SftpException, Sftp
+from libssh2.channel import ChannelException, Channel
+from libssh2.session import SessionException, Session
+from libssh2.sftp import SftpException, Sftp
 
 __all__ = [
     'Channel',

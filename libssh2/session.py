@@ -23,7 +23,7 @@ Abstraction for libssh2 L{Session} object
 
 import _libssh2
 
-from channel import Channel
+from libssh2.channel import Channel
 
 class SessionException(Exception):
     """
