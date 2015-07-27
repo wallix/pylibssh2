@@ -154,6 +154,20 @@ class Session(object):
         """
         return Channel(self._session.scp_recv(remote_path))
 
+    def scp_recv_e(self, remote_path):
+        """
+        --writeme--
+        Gets a remote file via SCP Protocol. Returns a tuple of Channel and file size in bytes.
+
+        @param remote_path: absolute path of remote file to transfer
+        @type remote_path: str
+
+        @return: new channel opened and sb.st_size
+        @rtype: (L{Channel}, int)
+        """
+        ch,sz=self._session.scp_recv_e(remote_path)
+        return Channel(ch),sz
+
     def scp_send(self, path, mode, size):
         """
         Sends a file to remote host via SCP protocol.

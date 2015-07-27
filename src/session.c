@@ -21,6 +21,7 @@
 #include <Python.h>
 #define PYLIBSSH2_MODULE
 #include "pylibssh2.h"
+#include <sys/stat.h>
 
 /* {{{ PYLIBSSH2_Session_set_banner
  */
@@ -634,6 +635,42 @@ PYLIBSSH2_Session_scp_recv(PYLIBSSH2_SESSION *self, PyObject *args)
 }
 /* }}} */
 
+/* {{{ PYLIBSSH2_Session_scp_recv_e
+ */
+static char PYLIBSSH2_Session_scp_recv_e_doc[] = "\n\
+scp_recv_e(remote_path) -> Tuple of libssh2.Channel and stat.st_size\n\
+\n\
+Requests a remote file via SCP protocol.\n\
+\n\
+@param  remote_path: absolute path of remote file to transfer\n\
+@type   remote_path: str\n\
+\n\
+@return new channel opened and size of the requested file in bytes\n\
+@rtype  (libssh2.Channel, int)";
+
+static PyObject *
+PYLIBSSH2_Session_scp_recv_e(PYLIBSSH2_SESSION *self, PyObject *args)
+{
+    char *path;
+    LIBSSH2_CHANNEL *channel;
+
+    if (!PyArg_ParseTuple(args, "s:scp_recv_e", &path)) {
+        return NULL;
+    }
+    
+    struct stat sb;
+
+    channel = libssh2_scp_recv(self->session, path, &sb);
+    if (channel == NULL) {
+        /* CLEAN: PYLIBSSH2_CHANNEL_SCP_RECV_ERROR_MSG */
+        PyErr_SetString(PYLIBSSH2_Error, "SCP receive error.");
+        return NULL;
+    }
+
+    return (PyObject *)Py_BuildValue("(N,l)",PYLIBSSH2_Channel_New(channel, 1),sb.st_size);
+}
+/* }}} */
+
 /* {{{ PYLIBSSH2_Session_scp_send
  */
 static char PYLIBSSH2_Session_scp_send_doc[] = "\n\
@@ -1052,6 +1089,7 @@ static PyMethodDef PYLIBSSH2_Session_methods[] =
     ADD_METHOD(session_method_pref),
     ADD_METHOD(open_session),
     ADD_METHOD(scp_recv),
+    ADD_METHOD(scp_recv_e),
     ADD_METHOD(scp_send),
     ADD_METHOD(sftp_init),
     ADD_METHOD(direct_tcpip),
