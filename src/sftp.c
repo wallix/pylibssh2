@@ -705,7 +705,7 @@ PYLIBSSH2_Sftp_set_stat(PYLIBSSH2_SFTP *self, PyObject *args)
     rc = libssh2_sftp_setstat(self->sftp, path, &attr);
     Py_END_ALLOW_THREADS
 
-    if (rc == -1) {
+    if (rc < 0) {
         PyErr_SetString(PYLIBSSH2_Error, "Unable to stat.");
         return NULL;
     }
