@@ -600,6 +600,54 @@ PYLIBSSH2_Session_open_session(PYLIBSSH2_SESSION *self, PyObject *args)
 }
 /* }}} */
 
+/* {{{ PYLIBSSH2_Session_open_ex
+ */
+static char PYLIBSSH2_Session_open_ex_doc[] = "\n\
+open_ex(channel_type, window_size, packet_size, message, dealloc) -> libssh2.Channel\n\
+\n\
+Establishes a generic session channel for the current session.\n\
+\n\
+@return new channel opened\n\
+@rtype  libssh2.Channel";
+
+static PyObject *
+PYLIBSSH2_Session_open_ex(PYLIBSSH2_SESSION *self, PyObject *args)
+{
+    int dealloc = 1;
+    LIBSSH2_CHANNEL *channel;
+
+	const char *channel_type = "custom";
+	unsigned int channel_type_len = 0;
+	unsigned int window_size = 10*1024*1024;
+	unsigned int packet_size = 1*1024*1024;
+	const char *message = "";
+	unsigned int message_len = 0;
+
+    if (!PyArg_ParseTuple(args, "|siisi:open_ex", &channel_type, &window_size, &packet_size, &message, &dealloc)) {
+        return NULL;
+    }
+
+	channel_type_len = strlen(channel_type);
+	message_len = strlen(message);
+
+    channel = libssh2_channel_open_ex(self->session, channel_type, channel_type_len, window_size, packet_size, message, message_len);
+    
+    if (channel== NULL){
+      if (libssh2_session_last_error(self->session,NULL,NULL,0) ==
+	  LIBSSH2_ERROR_EAGAIN){
+	return Py_BuildValue("");
+	}
+      else{
+	PyErr_SetString(PYLIBSSH2_Error, "Failed to open channel");
+	return NULL;
+      }
+    }
+    else {
+      return (PyObject *)PYLIBSSH2_Channel_New(channel, dealloc);
+    }
+}
+/* }}} */
+
 /* {{{ PYLIBSSH2_Session_scp_recv
  */
 static char PYLIBSSH2_Session_scp_recv_doc[] = "\n\
@@ -1051,6 +1099,7 @@ static PyMethodDef PYLIBSSH2_Session_methods[] =
     ADD_METHOD(userauth_publickey_fromfile),
     ADD_METHOD(session_method_pref),
     ADD_METHOD(open_session),
+    ADD_METHOD(open_ex),
     ADD_METHOD(scp_recv),
     ADD_METHOD(scp_send),
     ADD_METHOD(sftp_init),

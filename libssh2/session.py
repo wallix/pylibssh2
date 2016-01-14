@@ -133,6 +133,16 @@ class Session(object):
         ret = self._session.open_session()
         return Channel(ret) if ret else None
 
+    def open_ex(self, channel_type="custom", window_size=10*1024*1024, packet_size=10*1024*1024, message=""):
+        """
+        Allocates a generic new L{Channel} for the session.
+
+        @return: new channel opened
+        @rtype: L{Channel}
+        """
+        ret = self._session.open_ex(channel_type, window_size, packet_size, message)
+        return Channel(ret) if ret else None
+
     def set_trace(self, bitmask):
         """
         Sets trace level on the session.
